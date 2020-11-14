@@ -76,7 +76,7 @@ WSGI_APPLICATION = 'labmanager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'github_actions',
+        'NAME': 'labmanager',
         'USER': 'fablabdev',
         'PASSWORD': 'fablabdev',
         'HOST': '127.0.0.1',
