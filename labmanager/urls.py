@@ -1,4 +1,4 @@
-"""labmanager URL Configuration
+"""LabManager URL Configuration
 
 The `urlpatterns` list routes URLs to views. For more information please see:
     https://docs.djangoproject.com/en/3.1/topics/http/urls/
@@ -15,10 +15,10 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path
-from django.conf.urls import include
+from lab_manager import views
+from django.conf.urls import url, include 
 
 urlpatterns = [
-    path('', include('pay_by_use.urls')),
     path('admin/', admin.site.urls),
-
+    url(r'^', include('lab_manager.urls')),
 ]
