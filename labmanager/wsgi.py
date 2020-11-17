@@ -1,5 +1,5 @@
 """
-WSGI config for labmanager project.
+WSGI config for LabManager project.
 
 It exposes the WSGI callable as a module-level variable named ``application``.
 
