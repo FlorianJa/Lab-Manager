@@ -18,18 +18,34 @@ def user_list(request):
         username = request.GET.get('username', None)
         if username is not None:
             users = users.filter(username__icontains=username)
-        labmanager_serializer = FabLabUserSerializer(users, many=True)
-        return JsonResponse(labmanager_serializer.data, safe=False)
+        fablabuser_serializer = FabLabUserSerializer(users, many=True)
+        return JsonResponse(fablabuser_serializer.data, safe=False)
     elif request.method == 'POST':
         user_data = JSONParser().parse(request)
-        labmanager_serializer = FabLabUserSerializer(data=user_data)
-        if labmanager_serializer.is_valid():
-            labmanager_serializer.save()
-            return JsonResponse(labmanager_serializer.data, status=status.HTTP_201_CREATED) 
-        return JsonResponse(labmanager_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        fablabuser_serializer = FabLabUserSerializer(data=user_data)
+        if fablabuser_serializer.is_valid():
+            fablabuser_serializer.save()
+            return JsonResponse(fablabuser_serializer.data, status=status.HTTP_201_CREATED) 
+        return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     elif request.method == 'DELETE':
         count = FabLabUser.objects.all().delete()
         return JsonResponse({'message': '{} Users were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
+
+
+#To change login status
+@api_view(['PUT'])
+def user_list_detail(request,pk):
+    try: 
+        user = FabLabUser.objects.get(rfid_uuid=pk)
+    except FabLabUser.DoesNotExist: 
+        return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+    if request.method == 'PUT': 
+        user_data = JSONParser().parse(request) 
+        fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
+        if fablabuser_serializer.is_valid(): 
+            fablabuser_serializer.save() 
+            return JsonResponse(fablabuser_serializer.data) 
+        return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 #To manage default material usage details
 @api_view(['GET', 'PUT'])

@@ -1,10 +1,56 @@
-import paho.mqtt.subscribe as subscribe
-import json
-from datetime import datetime
-import paho.mqtt.client as mqttclient
+# -*- coding: utf-8 -*-
+from __future__ import unicode_literals
+
+import paho.mqtt.client as mqtt
+import threading
+import datetime
 import time
 
-def on_mqtt_connect(client, userdata, flags, rc):
+
+MQTT_HOST = '127.0.0.1'
+MQTT_PORT = 1883
+# WARNING add credentials
+MQTT_USER = 'fablabcontrol'
+MQTT_PASS = 'PNQGvTC7PMmm'
+
+# Topics
+# FabLab WebIf
+# FabLab/{esp_mac}/cmd/ {uuid} no-retain subscribe
+# FabLab/{esp_mac}/status/ {uuid} retain publish
+
+# FabLab ESP
+# FabLab/{esp_mac}/cmd/ {uuid} no-retain publish
+# FabLab/{esp_mac}/status/ {uuid} retain subscribe
+
+# json message
+# {'cmd':'command','data':'information'}
+
+
+class fablabcontrolThread(threading.Thread):
+    def __init__(self, event):
+        threading.Thread.__init__(self)
+        self.stop_event = event
+        self.mqttc = None
+
+    def run(self):
+        print("Start FabLabControl Thread, wait for Django ....")
+        time.sleep(5.0)
+        
+        # mqtt client starten
+        self.mqttc = mqtt.Client()
+        self.mqttc.username_pw_set(MQTT_USER, password=MQTT_PASS)
+        self.mqttc.on_connect = self.on_mqtt_connect
+        self.mqttc.on_disconnect = self.on_mqtt_disconnect
+        self.mqttc.on_message = self.on_mqtt_message
+        self.mqttc.connect(MQTT_HOST, MQTT_PORT, 60)
+
+        try:
+            while not self.stop_event.wait(0.2):
+                self.mqttc.loop()
+        finally:
+            self.mqttc.disconnect()
+
+    def on_mqtt_connect(self, client, userdata, flags, rc):
         if int(rc) != 0:
             if int(rc) == -4:
                 print("MQTT_CONNECTION_TIMEOUT")
@@ -23,33 +69,92 @@ def on_mqtt_connect(client, userdata, flags, rc):
             elif int(rc) == 5:
                 print("MQTT_CONNECT_UNAUTHORIZED")
         else:
-            print("Mit MQTT Server verbunden...")
-            global connected
-            connected=True
-def on_mqtt_message(client, userdata, msg):
-    import json
-    import datetime
-    print("MQTT Nachricht empfangen" + msg.topic +
+            print("Connected to MQTT server ...")
+            client.subscribe("FabLab/+/cmd", 2)
+            # django.setup()
+
+    def on_mqtt_disconnect(self, client, userdata, rc):
+        self.mqttc.reconnect()
+        if rc != 0:
+            print("MQTT connection lost ...")
+
+    def on_mqtt_message(self, client, userdata, msg):
+        import json
+        from .models import PlugwiseCircle, EnergyMonitor
+        from channels import Group
+        import datetime
+
+        print("MQTT message received" + msg.topic +
               " " + msg.payload.decode('UTF-8'))
-    
-connected=False
-messageReceived=False
 
-broker_address=""
-port=
-user=""
-password=""
+        try:
+            topic = msg.topic.split('/')
+            data = json.loads(msg.payload.decode('UTF-8'))
+            print(data)
+            if(data["_event"]=="PrintDone" or "PrintCancelled"):
+                self.add_usage(data)
+            # if str(topic[0]) == "FabLab" and str(topic[2]) == "cmd":
+            #     if data["cmd"] == "1":
+            #         print("ESP " +
+            #               str(topic[1]) +
+            #               " want to register ..." +
+            #               msg.payload.decode('UTF-8'))
+            #         self.login(str(topic[1]), data)
+            #     elif data["cmd"] == "3":
+            #         print("ESP " +
+            #               str(topic[1]) +
+            #               " will abmelden..." + 
+            #               msg.payload.decode('UTF-8'))
+            #         self.logout(str(topic[1]), data)
+            
+            
+            
+            
+        except Exception as e:
+            print(e)
 
-client= mqttclient.Client("MQTT")
-client.on_message=on_mqtt_message
-client.username_pw_set(user,password=password)
-client.on_connect=on_mqtt_connect
-client.connect(broker_address,port=port)
-client.loop_start()
-client.subscribe("fablab/printers/eos/#")
-
-while connected!=True:
-    time.sleep(0.2)
-while messageReceived!=True:
-    time.sleep(0.2)
-client.loop_stop()
+    def login(self, esp_mac):
+        from .models import FabLabUser
+        from lab_manager.serializers import FabLabUserSerializer
+        import json
+        import datetime
+        try:
+            user = FabLabUser.objects.get(rfid_uuid=esp_mac)
+            user.is_login=True
+            fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
+            if fablabuser_serializer.is_valid(): 
+                fablabuser_serializer.save()
+                print(+ esp_mac + "login status updated" )
+        except FabLabUser.DoesNotExist: 
+            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        
+            
+    def add_usage(self,data):
+        from lab_manager.serializers import UsageSerializer,MaterialSerializer,PrinterSerializer,PrinterSerializer
+        from .models import UsageData,Material,Printer,Operating
+        import json
+        import datetime
+        material = Material.objects.get(pk=1)
+        operating = Operating.objects.get(pk=1)
+        printer = Printer.objects.get(pk=1)
+        usage_data={
+            "user": data["owner"],
+             "file_name": data["name"],
+             "print_time": data["time"],
+             "time_stamp": data["_timestamp"],
+             "state": data["_event"],
+             "printer_name":'EOS',
+             "filament_price":material.filament_price,
+             "filament_weight":material.filament_weight,
+             "model_weight":material.model_weight,
+             "price_printer":printer.price_printer,
+             "lifespan":printer.lifespan,
+             "maintainence_cost":printer.maintainence_cost,
+             "electricity_cost":operating.electricity_cost,
+             "power_consumption":operating.power_consumption
+             }
+        #usage_data = JSONParser().parse(request)
+        usage_serializer = UsageSerializer(data=usage_data)
+        if usage_serializer.is_valid():
+            usage_serializer.save()
+        
