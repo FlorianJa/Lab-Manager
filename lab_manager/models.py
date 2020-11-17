@@ -59,8 +59,8 @@ class Printer(PrinterUsage):
 class UsageData(MaterialUsage,OperatingUsage,PrinterUsage):
     owner = models.CharField(max_length=14)
     file_name = models.CharField(max_length=50)
-    print_time = models.DateTimeField()
-    time_stamp = models.DateTimeField()
+    print_time = models.DecimalField(max_digits=15, decimal_places=3)
+    time_stamp = models.BigIntegerField()
     print_status=models.CharField(max_length=14)
     printer_name =models.CharField(max_length=14)
     
