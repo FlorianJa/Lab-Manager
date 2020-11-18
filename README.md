@@ -9,14 +9,18 @@ The new Lab management and access control system for the Fab Lab Siegen
 * Setup local DB (Status: Done)
 * Code Views & Models (Status: Done)
 * Testing API end points using [postman](https://www.guru99.com/postman-tutorial.html) (Status: Done)
-* Setup unit testing (Status: ToDo)
+* Setup unit testing (Status: Done)
 * Code fabalabcontrol (Status: ToDo)
 * Design UI Screens (Status: ToDo)
 * Code React App (Status: ToDo)
 * Connect React App to REST API (Status: ToDo)
 * Complete unit testing (Status: ToDo)
 
+## Project Links
 
+* [Architecture](https://drive.google.com/file/d/16qB0iT30ZRu07Zg9T2nqXLLCi88Ac29D/view?usp=sharing)
+* [UI Screens](https://www.figma.com/file/Xs6OPzpfH9FIXUx1hRykLT/LabManager?node-id=0%3A1)
+* [UML Diagram](https://lucid.app/invitations/accept/c4f7d980-8cc1-4237-884a-6c712c882c05)
 
 ## Setup
 
