@@ -124,7 +124,7 @@ class fablabcontrolThread(threading.Thread):
             fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
             if fablabuser_serializer.is_valid(): 
                 fablabuser_serializer.save()
-                print(+ esp_mac + "login status updated" )
+                print(+ esp_mac + ": login status as Active updated" )
         except FabLabUser.DoesNotExist: 
             return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
         
@@ -157,4 +157,21 @@ class fablabcontrolThread(threading.Thread):
         usage_serializer = UsageSerializer(data=usage_data)
         if usage_serializer.is_valid():
             usage_serializer.save()
+    
+     def logout(self, esp_mac,data):
+        from .models import FabLabUser
+        from lab_manager.serializers import FabLabUserSerializer
+        import json
+        import datetime
+        try:
+            user = FabLabUser.objects.get(rfid_uuid=esp_mac)
+            if(data["owner"]===user.username and data["_event"]=="PrintDone"):
+                user.is_login=False
+            fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
+            if fablabuser_serializer.is_valid(): 
+                fablabuser_serializer.save()
+                print(+ esp_mac + ": login status as Inactive updated" )
+        except FabLabUser.DoesNotExist: 
+            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
         
+            

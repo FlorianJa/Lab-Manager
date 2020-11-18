@@ -11,7 +11,7 @@ The new Lab management and access control system for the Fab Lab Siegen
 * Testing API end points using [postman](https://www.guru99.com/postman-tutorial.html) (Status: Done)
 * Setup unit testing (Status: Done)
 * Code fabalabcontrol (Status: ToDo)
-* Design UI Screens (Status: ToDo)
+* Design UI Screens (Status: Done)
 * Code React App (Status: ToDo)
 * Connect React App to REST API (Status: ToDo)
 * Complete unit testing (Status: ToDo)
