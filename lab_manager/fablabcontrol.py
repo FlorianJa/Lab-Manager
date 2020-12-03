@@ -3,15 +3,17 @@ from __future__ import unicode_literals
 
 import paho.mqtt.client as mqtt
 import threading
-import datetime
 import time
+from rest_framework.parsers import JSONParser 
+import simplejson
 
 
-MQTT_HOST = '127.0.0.1'
+
+MQTT_HOST = '18.198.3.0'
 MQTT_PORT = 1883
 # WARNING add credentials
 MQTT_USER = 'fablabcontrol'
-MQTT_PASS = 'PNQGvTC7PMmm'
+MQTT_PASS = 'fablabcontrol'
 
 # Topics
 # FabLab WebIf
@@ -37,16 +39,16 @@ class fablabcontrolThread(threading.Thread):
         time.sleep(5.0)
         
         # mqtt client starten
-        self.mqttc = mqtt.Client()
-        self.mqttc.username_pw_set(MQTT_USER, password=MQTT_PASS)
-        self.mqttc.on_connect = self.on_mqtt_connect
-        self.mqttc.on_disconnect = self.on_mqtt_disconnect
+        self.mqttc = mqtt.Client()        
         self.mqttc.on_message = self.on_mqtt_message
-        self.mqttc.connect(MQTT_HOST, MQTT_PORT, 60)
+        self.mqttc.username_pw_set(MQTT_USER, password=MQTT_PASS)        
+        self.mqttc.on_connect = self.on_mqtt_connect
+        self.mqttc.connect(MQTT_HOST, MQTT_PORT)
+        self.mqttc.on_disconnect = self.on_mqtt_disconnect
 
         try:
             while not self.stop_event.wait(0.2):
-                self.mqttc.loop()
+                self.mqttc.loop_start()
         finally:
             self.mqttc.disconnect()
 
@@ -70,108 +72,107 @@ class fablabcontrolThread(threading.Thread):
                 print("MQTT_CONNECT_UNAUTHORIZED")
         else:
             print("Connected to MQTT server ...")
-            client.subscribe("FabLab/+/cmd", 2)
+            self.mqttc.subscribe([("FabLabevent/PrintDone", 2),("FabLab/+/cmd", 2)])
             # django.setup()
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         self.mqttc.reconnect()
         if rc != 0:
             print("MQTT connection lost ...")
-
     def on_mqtt_message(self, client, userdata, msg):
         import json
-        from .models import PlugwiseCircle, EnergyMonitor
-        from channels import Group
         import datetime
-
-        print("MQTT message received" + msg.topic +
+        print("MQTT Nachricht empfangen" + msg.topic +
               " " + msg.payload.decode('UTF-8'))
-
         try:
             topic = msg.topic.split('/')
             data = json.loads(msg.payload.decode('UTF-8'))
+            print(topic)
             print(data)
-            if(data["_event"]=="PrintDone" or "PrintCancelled"):
+            if(data["_event"]=="PrintDone"):
+                print("print done event received")
                 self.add_usage(data)
-            # if str(topic[0]) == "FabLab" and str(topic[2]) == "cmd":
-            #     if data["cmd"] == "1":
-            #         print("ESP " +
-            #               str(topic[1]) +
-            #               " want to register ..." +
-            #               msg.payload.decode('UTF-8'))
-            #         self.login(str(topic[1]), data)
-            #     elif data["cmd"] == "3":
-            #         print("ESP " +
-            #               str(topic[1]) +
-            #               " will abmelden..." + 
-            #               msg.payload.decode('UTF-8'))
-            #         self.logout(str(topic[1]), data)
-            
-            
-            
-            
         except Exception as e:
             print(e)
-
-    def login(self, esp_mac):
-        from .models import FabLabUser
-        from lab_manager.serializers import FabLabUserSerializer
-        import json
-        import datetime
-        try:
-            user = FabLabUser.objects.get(rfid_uuid=esp_mac)
-            user.is_login=True
-            fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
-            if fablabuser_serializer.is_valid(): 
-                fablabuser_serializer.save()
-                print(+ esp_mac + ": login status as Active updated" )
-        except FabLabUser.DoesNotExist: 
-            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
-        
-            
-    def add_usage(self,data):
-        from lab_manager.serializers import UsageSerializer,MaterialSerializer,PrinterSerializer,PrinterSerializer
-        from .models import UsageData,Material,Printer,Operating
-        import json
-        import datetime
-        material = Material.objects.get(pk=1)
-        operating = Operating.objects.get(pk=1)
-        printer = Printer.objects.get(pk=1)
-        usage_data={
-            "user": data["owner"],
-             "file_name": data["name"],
-             "print_time": data["time"],
-             "time_stamp": data["_timestamp"],
-             "state": data["_event"],
-             "printer_name":'EOS',
-             "filament_price":material.filament_price,
-             "filament_weight":material.filament_weight,
-             "model_weight":material.model_weight,
-             "price_printer":printer.price_printer,
-             "lifespan":printer.lifespan,
-             "maintainence_cost":printer.maintainence_cost,
-             "electricity_cost":operating.electricity_cost,
-             "power_consumption":operating.power_consumption
-             }
-        #usage_data = JSONParser().parse(request)
-        usage_serializer = UsageSerializer(data=usage_data)
-        if usage_serializer.is_valid():
-            usage_serializer.save()
     
-     def logout(self, esp_mac,data):
-        from .models import FabLabUser
-        from lab_manager.serializers import FabLabUserSerializer
+           
+    def add_usage(self,data):
+        from .models import UsageData,PrinterUsage,OperatingUsage,FilamentUsage
         import json
-        import datetime
-        try:
-            user = FabLabUser.objects.get(rfid_uuid=esp_mac)
-            if(data["owner"]===user.username and data["_event"]=="PrintDone"):
-                user.is_login=False
-            fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
-            if fablabuser_serializer.is_valid(): 
-                fablabuser_serializer.save()
-                print(+ esp_mac + ": login status as Inactive updated" )
-        except FabLabUser.DoesNotExist: 
-            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
+        import time
+        from datetime import datetime
+        from decimal import Decimal
+        import requests
         
+        operating = OperatingUsage.objects.get(pk=1)
+        printer = PrinterUsage.objects.get(pk=1)
+        filament = FilamentUsage.objects.get(filament_name='Other')        
+        print_time = time.strftime("%H:%M:%S", time.gmtime(data["time"]))
+        print_time_hrs = data["time"]/3600
+        print("variables initialised")
+        
+        AdditionCost = 0
+        if(printer.lifespan > 0):
+            depreciation_per_hour= printer.price_printer / printer.lifespan
+        else:
+            depreciation_per_hour=0
             
+        print("variables initialised2")
+        FilamentCost= round((filament.filament_price/filament.filament_weight)* Decimal(0),2)
+        print("variables initialised3")
+        OperatingCost= round((operating.power_consumption*operating.electricity_cost)*Decimal(print_time_hrs),2)
+        print("variables initialised4")
+        PrinterCost= round((depreciation_per_hour+printer.maintainence_cost)* Decimal(print_time_hrs),2)
+        print("variables initialised5")
+        TotalCost= round(FilamentCost+OperatingCost+PrinterCost+ Decimal(AdditionCost),2)
+        print("variables initialised6")
+        print("calculation done")
+        
+        self.request=simplejson.dumps({
+             "owner": data["owner"],
+             "file_name": data["name"],
+             "print_time": print_time,
+             "time_stamp": str(datetime.fromtimestamp(data["_timestamp"])),
+             "print_status": data["_event"],
+             "printer_name":"EOS",
+             "filament_price":filament.filament_price,
+             "filament_name":filament.filament_name,
+             "filament_weight":filament.filament_weight,
+             "filament_used":"0.0",
+             "filament_cost":FilamentCost,
+             "operating_cost":OperatingCost,
+             "printer_cost":PrinterCost,
+             "additional_cost":AdditionCost,
+             "total_cost":TotalCost
+             })
+        print(self.request)
+        try:
+            r = requests.post('http://localhost:8080/api/usage', self.request)
+            print(r)
+        except Exception as e:
+            print(e)
+            
+        
+        
+        # usage_data = JSONParser().parse(request)
+        # usage_serializer = UsageSerializer(data=usage_data)
+        # if usage_serializer.is_valid():
+        #     usage_serializer.save()
+        #     print("print done event saved to db")
+        # else:
+        #     print("print done event not saved to db")
+
+        # if str(topic[0]) == "FabLab" and str(topic[2]) == "cmd":
+        #         if data["cmd"] == "1":
+        #             print("ESP " +
+        #                   str(topic[1]) +
+        #                   " will anmelden..." +
+        #                   msg.payload.decode('UTF-8'))
+        #             self.login(str(topic[1]), data)
+        #         elif data["cmd"] == "3":
+        #             print("ESP " +
+        #                   str(topic[1]) +
+        #                   " will abmelden..." + 
+        #                   msg.payload.decode('UTF-8'))
+        #             self.logout(str(topic[1]), data)
+        # if str(topic[0]) == "FabLab" and str(topic[2]) == "cmd":
