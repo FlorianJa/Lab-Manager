@@ -10,18 +10,16 @@ from rest_framework.decorators import api_view
 
 # Create your views here.
 
-# To manage users with respect to RFID
+# To retreive user status with respect to RFID,Printer
 
 
-@api_view(['GET', 'POST', 'DELETE'])
-def user_list(request):
+@api_view(['GET', 'POST'])
+def fablab_printers(request):
     if request.method == 'GET':
         users = FabLabUser.objects.all()
-        username = request.GET.get('username', None)
-        if username is not None:
-            users = users.filter(username__icontains=username)
-        fablabuser_serializer = FabLabUserSerializer(users, many=True)
-        return JsonResponse(fablabuser_serializer.data, safe=False)
+        user_serializer = FabLabUserSerializer(users, many=True)
+        usage_serializer = UsageSerializer(usage)
+        return JsonResponse(user_serializer.data, safe=False)
     elif request.method == 'POST':
         user_data = JSONParser().parse(request)
         fablabuser_serializer = FabLabUserSerializer(data=user_data)
@@ -29,21 +27,21 @@ def user_list(request):
             fablabuser_serializer.save()
             return JsonResponse(fablabuser_serializer.data, status=status.HTTP_201_CREATED)
         return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-    elif request.method == 'DELETE':
-        count = FabLabUser.objects.all().delete()
-        return JsonResponse({'message': '{} Users were deleted successfully!'.format(count[0])}, status=status.HTTP_204_NO_CONTENT)
 
 
-# To change login status
-@api_view(['PUT'])
-def user_list_detail(request, pk):
+# To change user,status with respect to RFID,Printer
+@api_view(['PUT', 'GET'])
+def fablab_printers_detail(request, pk):
     try:
-        user = FabLabUser.objects.get(rfid_uuid=pk)
+        users = FabLabUser.objects.get(pk=pk)
     except FabLabUser.DoesNotExist:
-        return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        fablabuser_serializer = FabLabUserSerializer(users)
+        return JsonResponse(fablabuser_serializer.data, safe=False)
     if request.method == 'PUT':
         user_data = JSONParser().parse(request)
-        fablabuser_serializer = FabLabUserSerializer(user, data=user_data)
+        fablabuser_serializer = FabLabUserSerializer(users, data=user_data)
         if fablabuser_serializer.is_valid():
             fablabuser_serializer.save()
             return JsonResponse(fablabuser_serializer.data)
@@ -147,7 +145,7 @@ def maintenance(request):
     elif request.method == 'PUT':
         maintenance_data = JSONParser().parse(request)
         maintenance_serializer = MaintenanceSerializer(
-            filament, data=maintenance_data)
+            maintenance, data=maintenance_data)
         if maintenance_serializer.is_valid():
             maintenance_serializer.save()
             return JsonResponse(maintenance_serializer.data)

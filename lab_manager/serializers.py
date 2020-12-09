@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from lab_manager.models import FabLabUser, PrinterUsage, FilamentUsage, OperatingUsage, UsageData, Maintenance
+from lab_manager.models import FabLabUser, PrinterUsage, FilamentUsage, OperatingUsage, Maintenance, UsageData
 
 
 class FabLabUserSerializer(serializers.ModelSerializer):
@@ -8,20 +8,22 @@ class FabLabUserSerializer(serializers.ModelSerializer):
         model = FabLabUser
         fields = ('id',
                   'rfid_uuid',
+                  'printer_name',
                   'username',
                   'name',
-                  'date_joined',
-                  'is_login')
+                  'last_access_date',
+                  'status',
+                  'assigned_by')
 
 
 class MaintenanceSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Maintenance
-        fields = ('printer_name',
+        fields = ('id',
+                  'printer_name',
                   'service_interval',
-                  'total_hours',
-                  'remaining_hours')
+                  'print_hours')
 
 
 class OperatingSerializer(serializers.ModelSerializer):

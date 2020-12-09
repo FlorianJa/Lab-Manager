@@ -9,14 +9,15 @@ class FabLabUser(models.Model):
 
     rfid_uuid = models.CharField(
         max_length=14, unique=True, verbose_name='RFID UUID')
+    printer_name = models.CharField(max_length=14, unique=True)
     username = models.CharField(max_length=14, unique=True)
-    name = models.CharField(max_length=30, blank=True)
-    date_joined = models.DateTimeField(auto_now_add=True)
-    # naming
-    is_login = models.BooleanField(verbose_name='Active', default=False)
+    name = models.CharField(max_length=30, unique=True)
+    last_access_date = models.CharField(max_length=20, blank=True, default='')
+    status = models.CharField(max_length=14, default='Inactive')
+    assigned_by = models.CharField(max_length=14, default='admin')
 
     def __str__(self):
-        return "(%r, %r, %r)" % (self.username, self.rfid_uuid, self.is_login)
+        return "(%r, %r, %r,%r,%r,%r)" % (self.rfid_uuid, self.printer_name, self.username, self.name, self.last_access_date, self.status)
 
 # Model for storing default Maintenance details
 
@@ -25,11 +26,10 @@ class Maintenance(models.Model):
 
     printer_name = models.CharField(max_length=14, unique=True)
     service_interval = models.PositiveSmallIntegerField()
-    total_hours = models.PositiveSmallIntegerField()
-    remaining_hours = models.PositiveSmallIntegerField()
+    print_hours = models.PositiveSmallIntegerField()
 
     def __str__(self):
-        return "(%r, %r, %r, %r)" % (self.service_interval, self.total_hours, self.remaining_hours, self.printer_name)
+        return "(%r, %r, %r)" % (self.service_interval, self.print_hours, self.printer_name)
 
 
 # Model for storing default Materials usage
