@@ -4,7 +4,7 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from lab_manager.models import FabLabUser, PrinterUsage, OperatingUsage, UsageData, FilamentUsage, Maintenance
+from lab_manager.models import FabLabUser, Printer, Operating, UsageData, Filament, Maintenance
 from lab_manager.serializers import FabLabUserSerializer, FilamentSerializer, OperatingSerializer, PrinterSerializer, UsageSerializer, MaintenanceSerializer
 from rest_framework.decorators import api_view
 
@@ -53,7 +53,7 @@ def fablab_printers_detail(request, pk):
 @api_view(['GET', 'PUT'])
 def filament_usage_default(request):
     if request.method == 'GET':
-        filament = FilamentUsage.objects.all()
+        filament = Filament.objects.all()
         filament_serializer = FilamentSerializer(filament, many=True)
         return JsonResponse(filament_serializer.data, safe=False)
     elif request.method == 'PUT':
@@ -70,11 +70,11 @@ def filament_usage_default(request):
 @api_view(['GET', 'PUT'])
 def operating_usage_default(request):
     try:
-        operating = OperatingUsage.objects.get(pk=1)
-    except OperatingUsage.DoesNotExist:
+        operating = Operating.objects.get(pk=1)
+    except Operating.DoesNotExist:
         return JsonResponse({'message': 'The Operating usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        operating = OperatingUsage.objects.all()
+        operating = Operating.objects.all()
         operating_serializer = OperatingSerializer(operating, many=True)
         return JsonResponse(operating_serializer.data, safe=False)
     elif request.method == 'PUT':
@@ -93,11 +93,11 @@ def operating_usage_default(request):
 @api_view(['GET', 'PUT'])
 def printer_usage_default(request):
     try:
-        printer = PrinterUsage.objects.get(pk=1)
-    except PrinterUsage.DoesNotExist:
+        printer = Printer.objects.get(pk=1)
+    except Printer.DoesNotExist:
         return JsonResponse({'message': 'The Pinter usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        printer = PrinterUsage.objects.all()
+        printer = Printer.objects.all()
         printer_serializer = PrinterSerializer(printer, many=True)
         return JsonResponse(printer_serializer.data, safe=False)
     elif request.method == 'PUT':
@@ -137,7 +137,7 @@ def maintenance(request):
     try:
         maintenance = Maintenance.objects.get(pk=1)
     except Maintenance.DoesNotExist:
-        return JsonResponse({'message': 'The Pinter usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'message': 'The maintenance usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         maintenance = Maintenance.objects.all()
         maintenance_serializer = MaintenanceSerializer(maintenance, many=True)

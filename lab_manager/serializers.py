@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from lab_manager.models import FabLabUser, PrinterUsage, FilamentUsage, OperatingUsage, Maintenance, UsageData
+from lab_manager.models import FabLabUser, Printer, Filament, Operating, Maintenance, UsageData
 
 
 class FabLabUserSerializer(serializers.ModelSerializer):
@@ -29,7 +29,7 @@ class MaintenanceSerializer(serializers.ModelSerializer):
 class OperatingSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = OperatingUsage
+        model = Operating
         fields = ('power_consumption',
                   'electricity_cost')
 
@@ -37,7 +37,7 @@ class OperatingSerializer(serializers.ModelSerializer):
 class FilamentSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = FilamentUsage
+        model = Filament
         fields = ('filament_name',
                   'filament_price',
                   'filament_weight')
@@ -46,7 +46,7 @@ class FilamentSerializer(serializers.ModelSerializer):
 class PrinterSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = PrinterUsage
+        model = Printer
         fields = ('price_printer',
                   'lifespan',
                   'maintainence_cost')

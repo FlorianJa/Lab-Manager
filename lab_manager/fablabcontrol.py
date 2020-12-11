@@ -8,7 +8,7 @@ from rest_framework.parsers import JSONParser
 import simplejson
 
 
-MQTT_HOST = '54.93.38.253'
+MQTT_HOST = '52.57.250.120'
 MQTT_PORT = 1883
 # WARNING add credentials
 MQTT_USER = 'fablabdev'
@@ -72,8 +72,7 @@ class fablabcontrolThread(threading.Thread):
         else:
             print("Connected to MQTT server ...")
             self.mqttc.subscribe(
-                [("FabLabevent/PrintDone", 2), ("FabLabevent/PrintStarted", 2), ("FabLabevent/PrintCancelled", 2), ("FabLab/UserStatus", 2)])  # change it for testing in real time
-            # django.setup()
+                [("OctPrintEvent/PrintDone", 2), ("OctPrintEvent/PrintStarted", 2), ("OctPrintEvent/PrintCancelled", 2)])  # change it for testing in real time
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         self.mqttc.reconnect()
@@ -90,22 +89,14 @@ class fablabcontrolThread(threading.Thread):
             data = json.loads(msg.payload.decode('UTF-8'))
             print(topic)
             print(data)
-            if(data["_event"] == "Login"):
-                print("Login event received")
-                self.login(data)
-            if(data["_event"] == "Logout"):
-                print("Logout event received")
-                self.logout(data)
 
             if(data["_event"] == "PrintCancelled"):
                 print("Logout event received")
                 self.logout(data)
-
             if(data["_event"] == "PrintDone"):
                 self.add_usage(data)
                 self.add_print_hours_maintenance(data)
                 self.logout(data)
-
             if(data["_event"] == "PrintStarted"):
                 print("print start event received")
                 self.login(data)
@@ -113,6 +104,7 @@ class fablabcontrolThread(threading.Thread):
         except Exception as e:
             print(e)
 
+    # Make the printer status active
     def login(self, data):
         from .models import FabLabUser
         import requests
@@ -120,94 +112,70 @@ class fablabcontrolThread(threading.Thread):
 
         print('login start')
 
-        today = datetime.datetime.now()
-        date_time = today.strftime("%m-%d-%Y, %H:%M:%S")
+        login_time = datetime.datetime.now()
+        login_time = login_time.strftime("%m-%d-%Y, %H:%M:%S")
 
+        # changing status of printer to Active
+        # change names
         try:
+            # If user starts a print from OctPrintEvent change status to Active
             if(data["_event"] == "PrintStarted"):
-                user = FabLabUser.objects.get(username=data["owner"])
-            else:
-                user = FabLabUser.objects.get(
-                    rfid_uuid=data["rfid_number"])
+                login_user = FabLabUser.objects.get(username=data["owner"])
+                if not login_user:
+                    login_user.username = data["owner"]
+                    login_user.name = data["owner"]
+                    login_user.assigned_by = data["owner"]
+                    login_user.last_access_date = str(login_time)
+                    login_user.status = "Active"
+                    print(login_user)
+                    login_user.save()
+                    print("login end")
+                else:
+                    login_user.status = "Active"
+                    login_user.last_access_date = str(login_time)
+                    print(login_user)
+                    login_user.save()
+                    print("login end")
+
         except Exception as e:
             print(e)
 
-        try:
-            if(data["_event"] == "PrintStarted") and not user:
-                username = data["owner"]
-                name = data["owner"]
-                assigned_by = data["owner"]
-            else:
-                username = user.username
-                name = user.name
-                assigned_by = user.assigned_by
-
-        except Exception as e:
-            print(e)
-
-        self.set_active = simplejson.dumps({
-            "id": user.id,
-            "rfid_uuid": user.rfid_uuid,
-            "printer_name": user.printer_name,
-            "username": username,
-            "name": name,
-            "last_access_date": str(date_time),
-            "status": "Active",
-            "assigned_by": assigned_by
-        })
-        print(self.set_active)
-        try:
-            self.login_request = requests.put(
-                'http://localhost:8080/api/printers/'+str(user.id), self.set_active)
-            print(self.login_request)
-        except Exception as e:
-            print(e)
-
+    # Make the printer status inactive
+    # change names
     def logout(self, data):
         from .models import FabLabUser
         import requests
         import datetime
 
-        today = datetime.datetime.now()
-        date_time = today.strftime("%m-%d-%Y, %H:%M:%S")
+        logout_time = datetime.datetime.now()
+        logout_time = logout_time.strftime("%m-%d-%Y, %H:%M:%S")
 
         print('logout request start')
 
+        # changing status of printer to Inactive
         try:
+            # If user ends a print from OctPrintEvent status change to Inactive
             if(data["_event"] == "PrintDone" or data["_event"] == "PrintCancelled"):
-                logoutuser = FabLabUser.objects.get(username=data["owner"])
-            else:
-                logoutuser = FabLabUser.objects.get(
-                    rfid_uuid=data["rfid_number"])
+                logout_user = FabLabUser.objects.get(username=data["owner"])
+                logout_user.status = "Inactive"
+                logout_user.last_access_date: str(logout_time)
+                print(logout_user)
+                logout_user.save()
+                print('logout request end')
+
         except Exception as e:
             print(e)
 
-        self.set_inactive = simplejson.dumps({
-            "id": logoutuser.id,
-            "rfid_uuid": logoutuser.rfid_uuid,
-            "printer_name": logoutuser.printer_name,
-            "username": logoutuser.username,
-            "name": logoutuser.name,
-            "last_access_date": str(date_time),
-            "status": "Inactive",
-            "assigned_by": logoutuser.assigned_by
-        })
-        print(self.set_inactive)
-
-        try:
-            self.logout_request = requests.put(
-                'http://localhost:8080/api/printers/'+str(logoutuser.id), self.set_inactive)
-            print(self.logout_request)
-        except Exception as e:
-            print(e)
-        print('logout request end')
+    # Add maintenance details by summing the print hours
 
     def add_print_hours_maintenance(self, data):
         from .models import Maintenance, FabLabUser
+        from decimal import Decimal
         import requests
 
         print('maintenance request start')
 
+        # get the printer name which is assigned to the user
         try:
             printer = FabLabUser.objects.get(
                 username=data["owner"])
@@ -216,28 +184,21 @@ class fablabcontrolThread(threading.Thread):
 
         maintenance = Maintenance.objects.get(
             printer_name=printer.printer_name)
-
         print_time_hrs = data["time"]/3600
+        # Add the print time to the total print hours of the printer
+        maintenance.print_hours = maintenance.print_hours + \
+            Decimal(print_time_hrs)
 
-        self.add_print_hours = simplejson.dumps({
-            "printer_name": maintenance.printer_name,
-            "service_interval": maintenance.service_interval,
-            "print_hours": maintenance.print_hours + int(print_time_hrs)
-        })
-
-        print(self.add_print_hours)
         try:
-            self.maintenance_request = requests.put(
-                'http://localhost:8080/api/maintenance', self.add_print_hours)
-            print(self.maintenance_request)
-
+            print(maintenance)
+            maintenance.save()
+            print('maintenance request end')
         except Exception as e:
             print(e)
 
-        print('maintenance request end')
-
+    # Add usage details of the print once it is Done.
     def add_usage(self, data):
-        from .models import UsageData, PrinterUsage, OperatingUsage, FilamentUsage, FabLabUser
+        from .models import UsageData, Printer, Operating, Filament, FabLabUser
         import json
         import time
         import datetime
@@ -253,12 +214,12 @@ class fablabcontrolThread(threading.Thread):
         except Exception as e:
             print(e)
 
-        operating = OperatingUsage.objects.get(pk=1)
-        printer = PrinterUsage.objects.get(pk=1)
-        filament = FilamentUsage.objects.get(filament_name='Other')
+        operating = Operating.objects.get(pk=1)
+        printer = Printer.objects.get(pk=1)
+        filament = Filament.objects.get(filament_name='Other')
         print_time = time.strftime("%H:%M:%S", time.gmtime(data["time"]))
-        today = datetime.datetime.now()
-        date_time = today.strftime("%m-%d-%Y, %H:%M:%S")
+        timestamp = time.strftime(
+            "%m-%d-%Y, %H:%M:%S", time.gmtime(data["_timestamp"]))
         print_time_hrs = data["time"]/3600
         print("variables initialised")
 
@@ -283,27 +244,28 @@ class fablabcontrolThread(threading.Thread):
         print("variables initialised6")
         print("calculation done")
 
-        self.add_usage_detail = simplejson.dumps({
-            "owner": data["owner"],
-            "file_name": data["name"],
-            "print_time": print_time,
-            "time_stamp": date_time,
-            "print_status": data["_event"],
-            "printer_name": printer_name,
-            "filament_price": filament.filament_price,
-            "filament_name": filament.filament_name,
-            "filament_weight": filament.filament_weight,
-            "filament_used": "0.0",
-            "filament_cost": FilamentCost,
-            "operating_cost": OperatingCost,
-            "printer_cost": PrinterCost,
-            "additional_cost": AdditionCost,
-            "total_cost": TotalCost
-        })
+        add_usage_detail = UsageData(
+            owner=data["owner"],
+            file_name=data["name"],
+            print_time=print_time,
+            time_stamp=timestamp,
+            print_status=data["_event"],
+            printer_name=printer_name,
+            filament_price=filament.filament_price,
+            filament_name=filament.filament_name,
+            filament_weight=filament.filament_weight,
+            filament_used=Decimal('0.00'),
+            filament_cost=FilamentCost,
+            operating_cost=OperatingCost,
+            printer_cost=PrinterCost,
+            additional_cost=AdditionCost,
+            total_cost=TotalCost
+        )
 
         try:
-            self.usage_request = requests.post(
-                'http://localhost:8080/api/usage', self.add_usage_detail)
-            print(self.usage_request)
+            print(add_usage_detail)
+            add_usage_detail.save()
+            print("usage added")
+
         except Exception as e:
             print(e)

@@ -33,7 +33,7 @@ class Maintenance(models.Model):
 
 
 # Model for storing default Materials usage
-class FilamentUsage(models.Model):
+class Filament(models.Model):
 
     filament_name = models.CharField(max_length=14, unique=True)
     filament_price = models.DecimalField(max_digits=10, decimal_places=2)
@@ -45,7 +45,7 @@ class FilamentUsage(models.Model):
 # Model for storing default operating usage
 
 
-class OperatingUsage(models.Model):
+class Operating(models.Model):
 
     power_consumption = models.DecimalField(max_digits=10, decimal_places=2)
     electricity_cost = models.DecimalField(max_digits=10, decimal_places=2)
@@ -56,7 +56,7 @@ class OperatingUsage(models.Model):
 # Model for storing default printer usage
 
 
-class PrinterUsage(models.Model):
+class Printer(models.Model):
 
     price_printer = models.DecimalField(max_digits=10, decimal_places=2)
     lifespan = models.PositiveSmallIntegerField()
