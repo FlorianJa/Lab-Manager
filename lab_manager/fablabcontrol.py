@@ -14,18 +14,6 @@ MQTT_PORT = 1883
 MQTT_USER = 'fablabdev'
 MQTT_PASS = 'fablabdev'
 
-# Topics
-# FabLab WebIf
-# FabLab/{esp_mac}/cmd/ {uuid} no-retain subscribe
-# FabLab/{esp_mac}/status/ {uuid} retain publish
-
-# FabLab ESP
-# FabLab/{esp_mac}/cmd/ {uuid} no-retain publish
-# FabLab/{esp_mac}/status/ {uuid} retain subscribe
-
-# json message
-# {'cmd':'command','data':'information'}
-
 
 class fablabcontrolThread(threading.Thread):
 

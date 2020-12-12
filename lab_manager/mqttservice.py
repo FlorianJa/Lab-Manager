@@ -35,11 +35,11 @@ class fablabcontrolThread(threading.Thread):
     def run(self):
         print("Start FabLabControl Thread, wait for Django ....")
         time.sleep(5.0)
-        
+
         # mqtt client starten
-        self.mqttc = mqtt.Client()        
+        self.mqttc = mqtt.Client()
         self.mqttc.on_message = self.on_mqtt_message
-        self.mqttc.username_pw_set(MQTT_USER, password=MQTT_PASS)        
+        self.mqttc.username_pw_set(MQTT_USER, password=MQTT_PASS)
         self.mqttc.on_connect = self.on_mqtt_connect
         self.mqttc.connect(MQTT_HOST, MQTT_PORT)
         self.mqttc.on_disconnect = self.on_mqtt_disconnect
@@ -93,20 +93,7 @@ class fablabcontrolThread(threading.Thread):
             print(data)
             if str(topic[0]) == "FabLabevent" and str(topic[1]) == "PrintDone":
                 self.add_usage(data)
-            # if str(topic[0]) == "FabLab" and str(topic[2]) == "cmd":
-            #     if data["cmd"] == "1":
-            #         print("ESP " +
-            #               str(topic[1]) +
-            #               " want to register ..." +
-            #               msg.payload.decode('UTF-8'))
-            #         self.login(str(topic[1]), data)
-            #     elif data["cmd"] == "3":
-            #         print("ESP " +
-            #               str(topic[1]) +
-            #               " will abmelden..." + 
-            #               msg.payload.decode('UTF-8'))
-            #         self.logout(str(topic[1]), data)
-            
+
         except Exception as e:
             print(e)
 
@@ -117,58 +104,55 @@ class fablabcontrolThread(threading.Thread):
         import datetime
         try:
             user = FabLabUser.objects.get(rfid_uuid=esp_mac)
-            user.is_login=True
-            fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
-            if fablabuser_serializer.is_valid(): 
+            user.is_login = True
+            fablabuser_serializer = FabLabUserSerializer(user, data=user_data)
+            if fablabuser_serializer.is_valid():
                 fablabuser_serializer.save()
-                print(+ esp_mac + ": login status as Active updated" )
-        except FabLabUser.DoesNotExist: 
-            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
-        
-            
-    def add_usage(self,data):
-        from lab_manager.serializers import UsageSerializer,MaterialSerializer,PrinterSerializer,PrinterSerializer
-        from .models import UsageData,Material,Printer,Operating
+                print(+ esp_mac + ": login status as Active updated")
+        except FabLabUser.DoesNotExist:
+            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND)
+
+    def add_usage(self, data):
+        from lab_manager.serializers import UsageSerializer, MaterialSerializer, PrinterSerializer, PrinterSerializer
+        from .models import UsageData, Material, Printer, Operating
         import json
         import datetime
         material = Material.objects.get(pk=1)
         operating = Operating.objects.get(pk=1)
         printer = Printer.objects.get(pk=1)
-        usage_data={
+        usage_data = {
             "user": data["owner"],
-             "file_name": data["name"],
-             "print_time": data["time"],
-             "time_stamp": data["_timestamp"],
-             "state": data["_event"],
-             "printer_name":'EOS',
-             "filament_price":material.filament_price,
-             "filament_weight":material.filament_weight,
-             "model_weight":material.model_weight,
-             "price_printer":printer.price_printer,
-             "lifespan":printer.lifespan,
-             "maintainence_cost":printer.maintainence_cost,
-             "electricity_cost":operating.electricity_cost,
-             "power_consumption":operating.power_consumption
-             }
+            "file_name": data["name"],
+            "print_time": data["time"],
+            "time_stamp": data["_timestamp"],
+            "state": data["_event"],
+            "printer_name": 'EOS',
+            "filament_price": material.filament_price,
+            "filament_weight": material.filament_weight,
+            "model_weight": material.model_weight,
+            "price_printer": printer.price_printer,
+            "lifespan": printer.lifespan,
+            "maintainence_cost": printer.maintainence_cost,
+            "electricity_cost": operating.electricity_cost,
+            "power_consumption": operating.power_consumption
+        }
         #usage_data = JSONParser().parse(request)
         usage_serializer = UsageSerializer(data=usage_data)
         if usage_serializer.is_valid():
             usage_serializer.save()
-    
-    def logout(self, esp_mac,data):
+
+    def logout(self, esp_mac, data):
         from .models import FabLabUser
         from lab_manager.serializers import FabLabUserSerializer
         import json
         import datetime
         try:
             user = FabLabUser.objects.get(rfid_uuid=esp_mac)
-            if(data["owner"]==user.username and data["_event"]=="PrintDone"):
-                user.is_login=False
-            fablabuser_serializer = FabLabUserSerializer(user, data=user_data) 
-            if fablabuser_serializer.is_valid(): 
+            if(data["owner"] == user.username and data["_event"] == "PrintDone"):
+                user.is_login = False
+            fablabuser_serializer = FabLabUserSerializer(user, data=user_data)
+            if fablabuser_serializer.is_valid():
                 fablabuser_serializer.save()
-                print(+ esp_mac + ": login status as Inactive updated" )
-        except FabLabUser.DoesNotExist: 
-            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND) 
-        
-            
+                print(+ esp_mac + ": login status as Inactive updated")
+        except FabLabUser.DoesNotExist:
+            return JsonResponse({'message': 'The User does not exist'}, status=status.HTTP_404_NOT_FOUND)

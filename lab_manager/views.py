@@ -47,21 +47,32 @@ def fablab_printers_detail(request, pk):
             return JsonResponse(fablabuser_serializer.data)
         return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
+# To use available filament details
+
+@api_view(['GET'])
+def filament_usage(request):
+    if request.method == 'GET':
+        filament = Filament.objects.all()
+        filament_serializer = FilamentSerializer(filament, many=True)
+        return JsonResponse(filament_serializer.data, safe=False)
+
 # To manage default material usage details
 
 
 @api_view(['GET', 'PUT'])
-def filament_usage_default(request, pk):
+def filament_usage_default(request, slug):
     try:
-        filament = Filmanent.objects.get(pk=pk)
+        filament_detail = Filament.objects.get(filament_name=slug)
     except filament.DoesNotExist:
         return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        filament_serializer = FilamentSerializer(filament)
+        filament_serializer = FilamentSerializer(filament_detail)
         return JsonResponse(filament_serializer.data, safe=False)
     elif request.method == 'PUT':
         filament_data = JSONParser().parse(request)
-        filament_serializer = FilamentSerializer(filament, data=filament_data)
+        filament_serializer = FilamentSerializer(
+            filament_detail, data=filament_data)
         if filament_serializer.is_valid():
             filament_serializer.save()
             return JsonResponse(filament_serializer.data)

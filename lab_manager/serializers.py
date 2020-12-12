@@ -40,8 +40,7 @@ class FilamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Filament
-        fields = ('id',
-                  'filament_name',
+        fields = ('filament_name',
                   'filament_price',
                   'filament_weight')
 
