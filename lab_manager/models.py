@@ -47,23 +47,27 @@ class Filament(models.Model):
 
 class Operating(models.Model):
 
+    printer_name = models.CharField(
+        max_length=14, unique=True, default='Other')
     power_consumption = models.DecimalField(max_digits=10, decimal_places=2)
     electricity_cost = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return "(%r, %r)" % (self.power_consumption, self.electricity_cost)
+        return "(%r, %r,%r)" % (self.printer_name, self.power_consumption, self.electricity_cost)
 
 # Model for storing default printer usage
 
 
 class Printer(models.Model):
 
+    printer_name = models.CharField(
+        max_length=14, unique=True, default='Other')
     price_printer = models.DecimalField(max_digits=10, decimal_places=2)
     lifespan = models.PositiveSmallIntegerField()
     maintainence_cost = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return "(%r, %r, %r)" % (self.price_printer, self.lifespan, self.maintainence_cost)
+        return "(%r, %r, %r,%r)" % (self.printer_name, self.price_printer, self.lifespan, self.maintainence_cost)
 
 # Model for storing usage details all together including Material,Operating,Printer usage details
 

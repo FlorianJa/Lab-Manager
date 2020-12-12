@@ -30,7 +30,9 @@ class OperatingSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Operating
-        fields = ('power_consumption',
+        fields = ('id',
+                  'printer_name',
+                  'power_consumption',
                   'electricity_cost')
 
 
@@ -38,7 +40,8 @@ class FilamentSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Filament
-        fields = ('filament_name',
+        fields = ('id',
+                  'filament_name',
                   'filament_price',
                   'filament_weight')
 
@@ -47,7 +50,9 @@ class PrinterSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Printer
-        fields = ('price_printer',
+        fields = ('id',
+                  'printer_name',
+                  'price_printer',
                   'lifespan',
                   'maintainence_cost')
 

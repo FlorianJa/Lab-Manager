@@ -51,10 +51,13 @@ def fablab_printers_detail(request, pk):
 
 
 @api_view(['GET', 'PUT'])
-def filament_usage_default(request):
+def filament_usage_default(request, pk):
+    try:
+        filament = Filmanent.objects.get(pk=pk)
+    except filament.DoesNotExist:
+        return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        filament = Filament.objects.all()
-        filament_serializer = FilamentSerializer(filament, many=True)
+        filament_serializer = FilamentSerializer(filament)
         return JsonResponse(filament_serializer.data, safe=False)
     elif request.method == 'PUT':
         filament_data = JSONParser().parse(request)
@@ -68,14 +71,13 @@ def filament_usage_default(request):
 
 
 @api_view(['GET', 'PUT'])
-def operating_usage_default(request):
+def operating_usage_default(request, pk):
     try:
-        operating = Operating.objects.get(pk=1)
+        operating = Operating.objects.get(pk=pk)
     except Operating.DoesNotExist:
         return JsonResponse({'message': 'The Operating usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        operating = Operating.objects.all()
-        operating_serializer = OperatingSerializer(operating, many=True)
+        operating_serializer = OperatingSerializer(operating)
         return JsonResponse(operating_serializer.data, safe=False)
     elif request.method == 'PUT':
         operating_data = JSONParser().parse(request)
@@ -91,14 +93,13 @@ def operating_usage_default(request):
 
 
 @api_view(['GET', 'PUT'])
-def printer_usage_default(request):
+def printer_usage_default(request, pk):
     try:
-        printer = Printer.objects.get(pk=1)
+        printer = Printer.objects.get(pk=pk)
     except Printer.DoesNotExist:
         return JsonResponse({'message': 'The Pinter usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        printer = Printer.objects.all()
-        printer_serializer = PrinterSerializer(printer, many=True)
+        printer_serializer = PrinterSerializer(printer)
         return JsonResponse(printer_serializer.data, safe=False)
     elif request.method == 'PUT':
         printer_data = JSONParser().parse(request)
@@ -133,14 +134,13 @@ def usage(request):
 
 # To manage default material usage details
 @api_view(['GET', 'PUT'])
-def maintenance(request):
+def maintenance(request, pk):
     try:
-        maintenance = Maintenance.objects.get(pk=1)
+        maintenance = Maintenance.objects.get(pk=pk)
     except Maintenance.DoesNotExist:
         return JsonResponse({'message': 'The maintenance usage default does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        maintenance = Maintenance.objects.all()
-        maintenance_serializer = MaintenanceSerializer(maintenance, many=True)
+        maintenance_serializer = MaintenanceSerializer(maintenance)
         return JsonResponse(maintenance_serializer.data, safe=False)
     elif request.method == 'PUT':
         maintenance_data = JSONParser().parse(request)

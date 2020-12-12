@@ -3,9 +3,9 @@ from __future__ import unicode_literals
 
 import paho.mqtt.client as mqtt
 import threading
-import time
 from rest_framework.parsers import JSONParser
 import simplejson
+import time
 
 
 MQTT_HOST = '52.57.250.120'
@@ -28,6 +28,7 @@ MQTT_PASS = 'fablabdev'
 
 
 class fablabcontrolThread(threading.Thread):
+
     def __init__(self, event):
         threading.Thread.__init__(self)
         self.stop_event = event
@@ -81,7 +82,6 @@ class fablabcontrolThread(threading.Thread):
 
     def on_mqtt_message(self, client, userdata, msg):
         import json
-        import datetime
         print("MQTT Nachricht empfangen" + msg.topic +
               " " + msg.payload.decode('UTF-8'))
         try:
@@ -93,11 +93,11 @@ class fablabcontrolThread(threading.Thread):
             if(data["_event"] == "PrintCancelled"):
                 print("Logout event received")
                 self.logout(data)
-            if(data["_event"] == "PrintDone"):
+            elif(data["_event"] == "PrintDone"):
                 self.add_usage(data)
                 self.add_print_hours_maintenance(data)
                 self.logout(data)
-            if(data["_event"] == "PrintStarted"):
+            elif(data["_event"] == "PrintStarted"):
                 print("print start event received")
                 self.login(data)
 
@@ -107,13 +107,10 @@ class fablabcontrolThread(threading.Thread):
     # Make the printer status active
     def login(self, data):
         from .models import FabLabUser
-        import requests
-        import datetime
+        from datetime import datetime as dt
+        import time
 
         print('login start')
-
-        login_time = datetime.datetime.now()
-        login_time = login_time.strftime("%m-%d-%Y, %H:%M:%S")
 
         # changing status of printer to Active
         # change names
@@ -121,18 +118,22 @@ class fablabcontrolThread(threading.Thread):
             # If user starts a print from OctPrintEvent change status to Active
             if(data["_event"] == "PrintStarted"):
                 login_user = FabLabUser.objects.get(username=data["owner"])
-                if not login_user:
+                if login_user:
                     login_user.username = data["owner"]
                     login_user.name = data["owner"]
                     login_user.assigned_by = data["owner"]
-                    login_user.last_access_date = str(login_time)
+                    login_time = dt.fromtimestamp(data["_timestamp"])
+                    login_user.last_access_date = login_time.strftime(
+                        '%d-%m-%Y %H:%M:%S')
                     login_user.status = "Active"
                     print(login_user)
                     login_user.save()
                     print("login end")
                 else:
                     login_user.status = "Active"
-                    login_user.last_access_date = str(login_time)
+                    login_time = dt.fromtimestamp(data["_timestamp"])
+                    login_user.last_access_date = login_time.strftime(
+                        '%d-%m-%Y %H:%M:%S')
                     print(login_user)
                     login_user.save()
                     print("login end")
@@ -144,11 +145,8 @@ class fablabcontrolThread(threading.Thread):
     # change names
     def logout(self, data):
         from .models import FabLabUser
-        import requests
-        import datetime
-
-        logout_time = datetime.datetime.now()
-        logout_time = logout_time.strftime("%m-%d-%Y, %H:%M:%S")
+        from datetime import datetime as ldt
+        import time
 
         print('logout request start')
 
@@ -158,7 +156,9 @@ class fablabcontrolThread(threading.Thread):
             if(data["_event"] == "PrintDone" or data["_event"] == "PrintCancelled"):
                 logout_user = FabLabUser.objects.get(username=data["owner"])
                 logout_user.status = "Inactive"
-                logout_user.last_access_date: str(logout_time)
+                logout_time = ldt.fromtimestamp(data["_timestamp"])
+                logout_user.last_access_date: logout_time.strftime(
+                    '%d-%m-%Y %H:%M:%S')
                 print(logout_user)
                 logout_user.save()
                 print('logout request end')
@@ -171,7 +171,6 @@ class fablabcontrolThread(threading.Thread):
     def add_print_hours_maintenance(self, data):
         from .models import Maintenance, FabLabUser
         from decimal import Decimal
-        import requests
 
         print('maintenance request start')
 
@@ -200,10 +199,9 @@ class fablabcontrolThread(threading.Thread):
     def add_usage(self, data):
         from .models import UsageData, Printer, Operating, Filament, FabLabUser
         import json
-        import time
-        import datetime
+        from datetime import datetime
         from decimal import Decimal
-        import requests
+        import time
 
         try:
             printer_detail = FabLabUser.objects.get(username=data["owner"])
@@ -214,12 +212,12 @@ class fablabcontrolThread(threading.Thread):
         except Exception as e:
             print(e)
 
-        operating = Operating.objects.get(pk=1)
-        printer = Printer.objects.get(pk=1)
+        operating = Operating.objects.get(printer_name=printer_name)
+        printer = Printer.objects.get(printer_name=printer_name)
         filament = Filament.objects.get(filament_name='Other')
         print_time = time.strftime("%H:%M:%S", time.gmtime(data["time"]))
-        timestamp = time.strftime(
-            "%m-%d-%Y, %H:%M:%S", time.gmtime(data["_timestamp"]))
+        done_time = datetime.fromtimestamp(data["_timestamp"])
+        timestamp = done_time.strftime('%d-%m-%Y %H:%M:%S')
         print_time_hrs = data["time"]/3600
         print("variables initialised")
 
