@@ -4,25 +4,21 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 
-from lab_manager.models import FabLabUser, Printer, Operating, UsageData, Filament, Maintenance
-from lab_manager.serializers import FabLabUserSerializer, FilamentSerializer, OperatingSerializer, PrinterSerializer, UsageSerializer, MaintenanceSerializer
+from lab_manager.models import FabLabUser, Printer, Operating, UsageData, Filament, Maintenance, User
+from lab_manager.serializers import FabLabUserSerializer, FilamentSerializer, OperatingSerializer, PrinterSerializer, UsageSerializer, MaintenanceSerializer, UserSerializer
 from rest_framework.decorators import api_view
 
-# Create your views here.
 
-# To retreive user status with respect to RFID,Printer
-
-
+# To retreive Lab Printer details
 @api_view(['GET', 'POST'])
 def fablab_printers(request):
     if request.method == 'GET':
-        users = FabLabUser.objects.all()
-        user_serializer = FabLabUserSerializer(users, many=True)
-        usage_serializer = UsageSerializer(usage)
-        return JsonResponse(user_serializer.data, safe=False)
+        fablabuser = FabLabUser.objects.all()
+        fablabuser_serializer = FabLabUserSerializer(fablabuser, many=True)
+        return JsonResponse(fablabuser_serializer.data, safe=False)
     elif request.method == 'POST':
-        user_data = JSONParser().parse(request)
-        fablabuser_serializer = FabLabUserSerializer(data=user_data)
+        fablabuser_data = JSONParser().parse(request)
+        fablabuser_serializer = FabLabUserSerializer(data=fablabuser_data)
         if fablabuser_serializer.is_valid():
             fablabuser_serializer.save()
             return JsonResponse(fablabuser_serializer.data, status=status.HTTP_201_CREATED)
@@ -33,23 +29,23 @@ def fablab_printers(request):
 @api_view(['PUT', 'GET'])
 def fablab_printers_detail(request, pk):
     try:
-        users = FabLabUser.objects.get(pk=pk)
-    except FabLabUser.DoesNotExist:
+        fablabuser = FabLabUser.objects.get(pk=pk)
+    except users.DoesNotExist:
         return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        fablabuser_serializer = FabLabUserSerializer(users)
+        fablabuser_serializer = FabLabUserSerializer(fablabuser)
         return JsonResponse(fablabuser_serializer.data, safe=False)
     if request.method == 'PUT':
-        user_data = JSONParser().parse(request)
-        fablabuser_serializer = FabLabUserSerializer(users, data=user_data)
+        fablabuser_data = JSONParser().parse(request)
+        fablabuser_serializer = FabLabUserSerializer(
+            fablabuser, data=fablabuser_data)
         if fablabuser_serializer.is_valid():
             fablabuser_serializer.save()
             return JsonResponse(fablabuser_serializer.data)
         return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# To use available filament details
-
+# To get all filament details
 @api_view(['GET'])
 def filament_usage(request):
     if request.method == 'GET':
@@ -57,9 +53,35 @@ def filament_usage(request):
         filament_serializer = FilamentSerializer(filament, many=True)
         return JsonResponse(filament_serializer.data, safe=False)
 
+
+# To get user details
+@api_view(['GET'])
+def user(request):
+    if request.method == 'GET':
+        user = User.objects.all()
+        user_serializer = UserSerializer(user, many=True)
+        return JsonResponse(user_serializer.data, safe=False)
+
+
+@api_view(['PUT', 'GET'])
+def user_detail(request, slug):
+    try:
+        user = User.objects.get(user=slug)
+    except user.DoesNotExist:
+        return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
+    if request.method == 'GET':
+        user_serializer = UserSerializer(user)
+        return JsonResponse(user_serializer.data, safe=False)
+    if request.method == 'PUT':
+        user_data = JSONParser().parse(request)
+        user_serializer = UserSerializer(user, data=user_data)
+        if user_serializer.is_valid():
+            user_serializer.save()
+            return JsonResponse(user_serializer.data)
+        return JsonResponse(user_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 # To manage default material usage details
-
-
 @api_view(['GET', 'PUT'])
 def filament_usage_default(request, slug):
     try:
@@ -78,9 +100,8 @@ def filament_usage_default(request, slug):
             return JsonResponse(filament_serializer.data)
         return JsonResponse(filament_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # To manage default operating usage details
-
-
 @api_view(['GET', 'PUT'])
 def operating_usage_default(request, pk):
     try:
@@ -100,9 +121,8 @@ def operating_usage_default(request, pk):
             return JsonResponse(operating_serializer.data)
         return JsonResponse(operating_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # To manage default printer usage details
-
-
 @api_view(['GET', 'PUT'])
 def printer_usage_default(request, pk):
     try:
@@ -120,9 +140,8 @@ def printer_usage_default(request, pk):
             return JsonResponse(printer_serializer.data)
         return JsonResponse(printer_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+
 # To manage total usage details
-
-
 @api_view(['GET', 'DELETE', 'POST'])
 def usage(request):
     if request.method == 'GET':
@@ -139,8 +158,6 @@ def usage(request):
             usage_serializer.save()
             return JsonResponse(usage_serializer.data, status=status.HTTP_201_CREATED)
         return JsonResponse(usage_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
- # To manage each individual usage detail
 
 
 # To manage default material usage details
@@ -163,6 +180,7 @@ def maintenance(request, pk):
         return JsonResponse(maintenance_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+# To manage usage details
 @api_view(['GET', 'PUT', 'DELETE'])
 def usage_detail(request, pk):
     try:

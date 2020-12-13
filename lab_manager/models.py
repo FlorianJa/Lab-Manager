@@ -19,9 +19,24 @@ class FabLabUser(models.Model):
     def __str__(self):
         return "(%r, %r, %r,%r,%r,%r)" % (self.rfid_uuid, self.printer_name, self.username, self.name, self.last_access_date, self.status)
 
-# Model for storing default Maintenance details
+
+# Model for User details
+class User(models.Model):
+
+    user = models.CharField(max_length=14, unique=True)
+    last_access_date = models.CharField(max_length=20, blank=True, default='')
+    print_hours = models.DecimalField(max_digits=10, decimal_places=2)
+    filament_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    operating_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    printer_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    additional_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    total_cost = models.DecimalField(max_digits=10, decimal_places=2)
+
+    def __str__(self):
+        return "(%r, %r, %r,%r,%r,%r,%r,%r,%r,%r,%r,%r,%r)" % (self.username, self.name, self.last_access_date, self.print_hours, self.filament_cost, self.operating_cost, self.printer_cost, self.additional_cost, self.total_cost)
 
 
+# Model for storing default operating usage
 class Maintenance(models.Model):
 
     printer_name = models.CharField(max_length=14, unique=True)

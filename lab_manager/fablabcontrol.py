@@ -105,19 +105,8 @@ class fablabcontrolThread(threading.Thread):
         try:
             # If user starts a print from OctPrintEvent change status to Active
             if(data["_event"] == "PrintStarted"):
-                login_user = FabLabUser.objects.get(username=data["owner"])
-                if login_user:
-                    login_user.username = data["owner"]
-                    login_user.name = data["owner"]
-                    login_user.assigned_by = data["owner"]
-                    login_time = dt.fromtimestamp(data["_timestamp"])
-                    login_user.last_access_date = login_time.strftime(
-                        '%d-%m-%Y %H:%M:%S')
-                    login_user.status = "Active"
-                    print(login_user)
-                    login_user.save()
-                    print("login end")
-                else:
+                try:
+                    login_user = FabLabUser.objects.get(username=data["owner"])
                     login_user.status = "Active"
                     login_time = dt.fromtimestamp(data["_timestamp"])
                     login_user.last_access_date = login_time.strftime(
@@ -125,7 +114,8 @@ class fablabcontrolThread(threading.Thread):
                     print(login_user)
                     login_user.save()
                     print("login end")
-
+                except Exception as e:
+                    print(e)
         except Exception as e:
             print(e)
 
@@ -185,7 +175,7 @@ class fablabcontrolThread(threading.Thread):
 
     # Add usage details of the print once it is Done.
     def add_usage(self, data):
-        from .models import UsageData, Printer, Operating, Filament, FabLabUser
+        from .models import UsageData, Printer, Operating, Filament, FabLabUser, User
         import json
         from datetime import datetime
         from decimal import Decimal
@@ -255,3 +245,37 @@ class fablabcontrolThread(threading.Thread):
 
         except Exception as e:
             print(e)
+
+        # Add usage details to user data
+            print("user usage data started")
+        try:
+            user = User.objects.get(user=data["owner"])
+            if(user):
+                user.last_access_date = timestamp
+                user.operating_cost += OperatingCost
+                user.printer_cost += PrinterCost
+                user.print_hours += Decimal(print_time_hrs)
+                user.filament_cost += FilamentCost
+                user.total_cost += TotalCost
+                try:
+                    user.save()
+                    print("user usage data updated")
+                except Exception as e:
+                    print(e)
+
+        except Exception as e:
+            print(e)
+            add_usage_user = User(
+                user=data["owner"],
+                last_access_date=timestamp,
+                print_hours=Decimal(print_time_hrs),
+                filament_cost=FilamentCost,
+                operating_cost=OperatingCost,
+                printer_cost=PrinterCost,
+                additional_cost=AdditionCost,
+                total_cost=TotalCost)
+            try:
+                add_usage_user.save()
+                print("user usage data updated")
+            except Exception as e:
+                print(e)

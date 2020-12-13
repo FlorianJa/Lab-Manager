@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from lab_manager.models import FabLabUser, Printer, Filament, Operating, Maintenance, UsageData
+from lab_manager.models import FabLabUser, Printer, Filament, Operating, Maintenance, User, UsageData
 
 
 class FabLabUserSerializer(serializers.ModelSerializer):
@@ -14,6 +14,20 @@ class FabLabUserSerializer(serializers.ModelSerializer):
                   'last_access_date',
                   'status',
                   'assigned_by')
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('user',
+                  'last_access_date',
+                  'print_hours',
+                  'filament_cost',
+                  'operating_cost',
+                  'printer_cost',
+                  'additional_cost',
+                  'total_cost')
 
 
 class MaintenanceSerializer(serializers.ModelSerializer):
