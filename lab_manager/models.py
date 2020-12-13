@@ -33,7 +33,7 @@ class User(models.Model):
     total_cost = models.DecimalField(max_digits=10, decimal_places=2)
 
     def __str__(self):
-        return "(%r, %r, %r,%r,%r,%r,%r,%r,%r,%r,%r,%r,%r)" % (self.username, self.name, self.last_access_date, self.print_hours, self.filament_cost, self.operating_cost, self.printer_cost, self.additional_cost, self.total_cost)
+        return "(%r, %r, %r,%r,%r,%r,%r,%r)" % (self.user, self.last_access_date, self.print_hours, self.filament_cost, self.operating_cost, self.printer_cost, self.additional_cost, self.total_cost)
 
 
 # Model for storing default operating usage

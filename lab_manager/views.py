@@ -68,7 +68,7 @@ def user_detail(request, slug):
     try:
         user = User.objects.get(user=slug)
     except user.DoesNotExist:
-        return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
+        return JsonResponse({'message': 'The user does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
         user_serializer = UserSerializer(user)
         return JsonResponse(user_serializer.data, safe=False)
