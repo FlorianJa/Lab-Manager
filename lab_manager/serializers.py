@@ -1,7 +1,8 @@
 from rest_framework import serializers
 from lab_manager.models import FabLabUser, Printer, Filament, Operating, Maintenance, User, UsageData
 
-
+# Django's serialization framework provides a mechanism for “translating” Django models into other formats.
+# Serializer for FabLabUser model
 class FabLabUserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -15,7 +16,7 @@ class FabLabUserSerializer(serializers.ModelSerializer):
                   'status',
                   'assigned_by')
 
-
+# Serializer for User model
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -29,7 +30,7 @@ class UserSerializer(serializers.ModelSerializer):
                   'additional_cost',
                   'total_cost')
 
-
+# Serializer for Maintenance model
 class MaintenanceSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -39,7 +40,7 @@ class MaintenanceSerializer(serializers.ModelSerializer):
                   'service_interval',
                   'print_hours')
 
-
+# Serializer for Operating model
 class OperatingSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -49,7 +50,7 @@ class OperatingSerializer(serializers.ModelSerializer):
                   'power_consumption',
                   'electricity_cost')
 
-
+# Serializer for Filament model
 class FilamentSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -58,7 +59,7 @@ class FilamentSerializer(serializers.ModelSerializer):
                   'filament_price',
                   'filament_weight')
 
-
+# Serializer for Printer model
 class PrinterSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -69,7 +70,7 @@ class PrinterSerializer(serializers.ModelSerializer):
                   'lifespan',
                   'maintainence_cost')
 
-
+# Serializer for UsageData model
 class UsageSerializer(serializers.ModelSerializer):
 
     class Meta:

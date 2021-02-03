@@ -2,9 +2,9 @@ from django.db import models
 from decimal import Decimal
 # Create your models here.
 
-# Model for mapping user detail with RFID
 
-
+# Each model maps to a single database table
+# Model for mapping user with with RFID and Printer
 class FabLabUser(models.Model):
 
     rfid_uuid = models.CharField(
@@ -20,7 +20,7 @@ class FabLabUser(models.Model):
         return "(%r, %r, %r,%r,%r,%r)" % (self.rfid_uuid, self.printer_name, self.username, self.name, self.last_access_date, self.status)
 
 
-# Model for User details
+# Model for storing overall usage details by all users
 class User(models.Model):
 
     user = models.CharField(max_length=14, unique=True)
@@ -36,7 +36,7 @@ class User(models.Model):
         return "(%r, %r, %r,%r,%r,%r,%r,%r)" % (self.user, self.last_access_date, self.print_hours, self.filament_cost, self.operating_cost, self.printer_cost, self.additional_cost, self.total_cost)
 
 
-# Model for storing default operating usage
+# Model for storing Maintenance details
 class Maintenance(models.Model):
 
     printer_name = models.CharField(max_length=14, unique=True)
@@ -47,7 +47,7 @@ class Maintenance(models.Model):
         return "(%r, %r, %r)" % (self.service_interval, self.print_hours, self.printer_name)
 
 
-# Model for storing default Materials usage
+# Model for storing default Filament details
 class Filament(models.Model):
 
     filament_name = models.CharField(max_length=14, unique=True)
@@ -57,9 +57,8 @@ class Filament(models.Model):
     def __str__(self):
         return "(%r, %r, %r)" % (self.filament_name, self.filament_price, self.filament_weight)
 
-# Model for storing default operating usage
 
-
+# Model for storing default operating details
 class Operating(models.Model):
 
     printer_name = models.CharField(
@@ -70,9 +69,8 @@ class Operating(models.Model):
     def __str__(self):
         return "(%r, %r,%r)" % (self.printer_name, self.power_consumption, self.electricity_cost)
 
-# Model for storing default printer usage
 
-
+# Model for storing default printer details
 class Printer(models.Model):
 
     printer_name = models.CharField(
@@ -84,9 +82,8 @@ class Printer(models.Model):
     def __str__(self):
         return "(%r, %r, %r,%r)" % (self.printer_name, self.price_printer, self.lifespan, self.maintainence_cost)
 
-# Model for storing usage details all together including Material,Operating,Printer usage details
 
-
+# Model for storing each usage detail all together with including Material,Operating,Printer cost details
 class UsageData(models.Model):
 
     owner = models.CharField(max_length=14)

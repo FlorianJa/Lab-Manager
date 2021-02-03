@@ -14,6 +14,14 @@ MQTT_PORT = 1883
 MQTT_USER = ''
 MQTT_PASS = ''
 
+# Topics
+# OctPrintEvent/PrintDone no-retain subscribe
+# OctPrintEvent/PrintStarted no-retain subscribe
+# OctPrintEvent/PrintCancelled no-retain subscribe
+
+# json message
+# {'cmd':'command','data':'information'}
+
 
 class fablabcontrolThread(threading.Thread):
 
@@ -61,7 +69,7 @@ class fablabcontrolThread(threading.Thread):
         else:
             print("Connected to MQTT server ...")
             self.mqttc.subscribe(
-                [("OctPrintEvent/PrintDone", 2), ("OctPrintEvent/PrintStarted", 2), ("OctPrintEvent/PrintCancelled", 2)])  # change it for testing in real time
+                [("OctPrintEvent/PrintDone", 2), ("OctPrintEvent/PrintStarted", 2), ("OctPrintEvent/PrintCancelled", 2)])
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         self.mqttc.reconnect()
@@ -75,16 +83,17 @@ class fablabcontrolThread(threading.Thread):
         try:
             topic = msg.topic.split('/')
             data = json.loads(msg.payload.decode('UTF-8'))
-            print(topic)
-            print(data)
 
+            # When print is cancelled event received from octoprint then logout the user
             if(data["_event"] == "PrintCancelled"):
                 print("Logout event received")
                 self.logout(data)
+            # When print is done event received from octoprint then add the usage, login the user, update the maintenance details
             elif(data["_event"] == "PrintDone"):
                 self.add_usage(data)
                 self.add_print_hours_maintenance(data)
                 self.logout(data)
+            # When print is started event received from octoprint then login the user
             elif(data["_event"] == "PrintStarted"):
                 print("print start event received")
                 self.login(data)
@@ -92,7 +101,7 @@ class fablabcontrolThread(threading.Thread):
         except Exception as e:
             print(e)
 
-    # Make the printer status active
+    # Makes the printer status active
     def login(self, data):
         from .models import FabLabUser
         from datetime import datetime as dt
@@ -103,7 +112,7 @@ class fablabcontrolThread(threading.Thread):
         # changing status of printer to Active
         # change names
         try:
-            # If user starts a print from OctPrintEvent change status to Active
+            # If user starts a print from OctPrintEvent change status in app to Active
             if(data["_event"] == "PrintStarted"):
                 try:
                     login_user = FabLabUser.objects.get(username=data["owner"])
@@ -130,7 +139,7 @@ class fablabcontrolThread(threading.Thread):
 
         # changing status of printer to Inactive
         try:
-            # If user ends a print from OctPrintEvent status change to Inactive
+            # If user ends a print from OctPrintEvent status change in app to Inactive
             if(data["_event"] == "PrintDone" or data["_event"] == "PrintCancelled"):
                 logout_user = FabLabUser.objects.get(username=data["owner"])
                 logout_user.status = "Inactive"
@@ -145,7 +154,6 @@ class fablabcontrolThread(threading.Thread):
             print(e)
 
     # Add maintenance details by summing the print hours
-
     def add_print_hours_maintenance(self, data):
         from .models import Maintenance, FabLabUser
         from decimal import Decimal
@@ -182,6 +190,7 @@ class fablabcontrolThread(threading.Thread):
         from decimal import Decimal
         import time
 
+        # get the printer details which is assigned to the user
         try:
             printer_detail = FabLabUser.objects.get(username=data["owner"])
             if(printer_detail):
@@ -194,32 +203,29 @@ class fablabcontrolThread(threading.Thread):
         operating = Operating.objects.get(printer_name=printer_name)
         printer = Printer.objects.get(printer_name=printer_name)
         filament = Filament.objects.get(filament_name='Other')
+        # change format of timestamp to HH:MM:SS
         print_time = time.strftime("%H:%M:%S", time.gmtime(data["time"]))
         done_time = datetime.fromtimestamp(data["_timestamp"])
         timestamp = done_time.strftime('%d-%m-%Y %H:%M:%S')
+        # Calculate print time to print hours
         print_time_hrs = data["time"]/3600
-        print("variables initialised")
 
-        AdditionCost = 0
         if(printer.lifespan > 0):
             depreciation_per_hour = printer.price_printer / printer.lifespan
         else:
             depreciation_per_hour = 0
 
-        print("variables initialised2")
+        # Calculating costs involved in each aspect
         FilamentCost = round(
             (filament.filament_price/filament.filament_weight) * Decimal(0), 2)
-        print("variables initialised3")
         OperatingCost = round(
             (operating.power_consumption*operating.electricity_cost)*Decimal(print_time_hrs), 2)
-        print("variables initialised4")
         PrinterCost = round(
             (depreciation_per_hour+printer.maintainence_cost) * Decimal(print_time_hrs), 2)
-        print("variables initialised5")
+        # Additional cost is Zero when usage detail is received, can be changed from App
+        AdditionCost = 0
         TotalCost = round(FilamentCost+OperatingCost +
                           PrinterCost + Decimal(AdditionCost), 2)
-        print("variables initialised6")
-        print("calculation done")
 
         add_usage_detail = UsageData(
             owner=data["owner"],
@@ -242,16 +248,16 @@ class fablabcontrolThread(threading.Thread):
         try:
             print(add_usage_detail)
             add_usage_detail.save()
-            print("usage added")
 
         except Exception as e:
             print(e)
 
-        # Add usage details to user data
-            print("user usage data started")
+        # Storing usage details for each user
         try:
+            # Find existing user
             user = User.objects.get(user=data["owner"])
             if(user):
+                # If user found, add new cost details to user account usage
                 user.last_access_date = timestamp
                 user.operating_cost += OperatingCost
                 user.printer_cost += PrinterCost
@@ -260,12 +266,13 @@ class fablabcontrolThread(threading.Thread):
                 user.total_cost += TotalCost
                 try:
                     user.save()
-                    print("user usage data updated")
                 except Exception as e:
                     print(e)
 
         except Exception as e:
             print(e)
+            # If user does't exist which means user is printing for the first time
+            # Then, add details of the user and usage detail to user account
             add_usage_user = User(
                 user=data["owner"],
                 last_access_date=timestamp,
@@ -277,6 +284,5 @@ class fablabcontrolThread(threading.Thread):
                 total_cost=TotalCost)
             try:
                 add_usage_user.save()
-                print("user usage data updated")
             except Exception as e:
                 print(e)
