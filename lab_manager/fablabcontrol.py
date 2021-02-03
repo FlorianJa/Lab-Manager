@@ -7,12 +7,12 @@ from rest_framework.parsers import JSONParser
 import simplejson
 import time
 
-
-MQTT_HOST = '52.57.250.120'
+# WARNING add MQTT Host
+MQTT_HOST = ''
 MQTT_PORT = 1883
 # WARNING add credentials
-MQTT_USER = 'fablabdev'
-MQTT_PASS = 'fablabdev'
+MQTT_USER = ''
+MQTT_PASS = ''
 
 
 class fablabcontrolThread(threading.Thread):
@@ -161,10 +161,11 @@ class fablabcontrolThread(threading.Thread):
 
         maintenance = Maintenance.objects.get(
             printer_name=printer.printer_name)
-        print_time_hrs = data["time"]/3600
+
+        print_time_hrs = int(Decimal(data["time"]/3600))
+        print(print_time_hrs)
         # Add the print time to the total print hours of the printer
-        maintenance.print_hours = maintenance.print_hours + \
-            Decimal(print_time_hrs)
+        maintenance.print_hours = maintenance.print_hours + print_time_hrs
 
         try:
             print(maintenance)
