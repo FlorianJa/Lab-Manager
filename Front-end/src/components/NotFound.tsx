@@ -1,5 +1,6 @@
 import React from "react";
 
+// When page is not found, render the below error information
 const NotFound = () => {
   return (
     <div className="not-found">

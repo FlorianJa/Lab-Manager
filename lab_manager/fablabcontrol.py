@@ -216,13 +216,16 @@ class fablabcontrolThread(threading.Thread):
             depreciation_per_hour = 0
 
         # Calculating costs involved in each aspect
+        # Filament Cost is set to 0 initially, this will be updated by operator in UI
         FilamentCost = round(
             (filament.filament_price/filament.filament_weight) * Decimal(0), 2)
+        # Operating Cost is calculated based on power comsumption of printer, local electricity cost and print time
         OperatingCost = round(
             (operating.power_consumption*operating.electricity_cost)*Decimal(print_time_hrs), 2)
+        # Printer Cost is based on depreciation_per_hour, maintenance cost of the printer and print time
         PrinterCost = round(
             (depreciation_per_hour+printer.maintainence_cost) * Decimal(print_time_hrs), 2)
-        # Additional cost is Zero when usage detail is received, can be changed from App
+        # Additional cost is Zero when usage detail is received, can be added from UI
         AdditionCost = 0
         TotalCost = round(FilamentCost+OperatingCost +
                           PrinterCost + Decimal(AdditionCost), 2)

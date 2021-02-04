@@ -5,6 +5,7 @@ import 'react-dropdown/style.css';
 
 const EditUsage: React.FC = () => {
 
+    // Create and assign initial state for variables using react hook 'useState'
     const { id } = useParams<{ id: string }>();
     const [usage, setUsage] = useState<any>([])
     const [filament_data, setFilamentData] = useState<any>([])
@@ -16,32 +17,37 @@ const EditUsage: React.FC = () => {
         total_cost: 0
     });
 
+    // Creating variables
     const { owner, file_name, print_time, time_stamp, print_status, printer_name, operating_cost, printer_cost }: any = change;
     let { filament_cost, total_cost }: any = change
     let { filament_weight, filament_price, filament_name, additional_cost, filament_used }: any = filament_data
-
+    // Calcluate filament_cost based on the input form data
+    // filament_cost = filament_price /filament_weight * filament_used;
+    // total_cost= filament_cost + printer_cost + operating_cost + additional_cost
     filament_cost = (((parseFloat(filament_data.filament_price) / parseFloat(filament_data.filament_weight)) * parseFloat(filament_data.filament_used)).toFixed(2))
     console.log(filament_cost)
     total_cost = ((parseFloat(filament_cost) + parseFloat(change.printer_cost) + parseFloat(change.operating_cost) + (parseFloat(filament_data.additional_cost))).toFixed(2))
 
-
+    // To update new changes in varaibles
     const onInputChange = (e: any) => {
         const newChange = { ...filament_data, [e.target.name]: e.target.value }
         setFilamentData(newChange)
     }
 
+    // To update new changes in filament data from UI
     const handleFilament = (event: any) => {
         console.log(event.target.value)
         const set_filament = event.target.value
         var filament_select = filament_detail.filter(function (item: { filament_name: string; }) {
             return item.filament_name === set_filament;
         });
-        console.log(filament_select)
         filament_weight = filament_select[0].filament_weight
         filament_price = filament_select[0].filament_price
         filament_name = filament_select[0].filament_name
         setFilamentData({ filament_weight, filament_price, filament_name, additional_cost, filament_used })
     }
+
+    // To calculate, update new changes of filament cost, additional cost, total cost in usage data from changes in UI for the usage detail
     const callsetusage = () => {
         user_data.filament_cost = (parseFloat(user_data.filament_cost) + (parseFloat(filament_cost) - parseFloat(usage.filament_cost))).toFixed(2)
         user_data.additional_cost = (parseFloat(user_data.additional_cost) + (parseFloat(additional_cost) - parseFloat(usage.additional_cost))).toFixed(2)
@@ -50,13 +56,16 @@ const EditUsage: React.FC = () => {
         setUsage({ ...change, ...filament_data, filament_cost, total_cost })
     };
 
+    // Similar to componentDidMount and componentDidUpdate:
+    // To perform actions upon loading the page
     useEffect(() => {
         loadUsage(); loadFilament(); loadUser();
     }, [owner]);
 
+    // new usage details are updated for each usage item
+    // Also the new usage details are added to each user account
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
-        console.log(usage)
         try {
             await axios.put(`http://localhost:8080/api/usage/${id}`, usage);
             console.log(user_data)
@@ -68,12 +77,13 @@ const EditUsage: React.FC = () => {
         }
     };
 
+    // To get usage details of each user
     const loadUser = async () => {
         const result = await axios.get(`http://localhost:8080/api/user/${owner}`);
         setUserData(result.data);
     };
 
-
+    // To get usage detail of each individual usage item
     const loadUsage = async () => {
         const result = await axios.get(`http://localhost:8080/api/usage/${id}`);
         setUsage(result.data);
@@ -82,11 +92,15 @@ const EditUsage: React.FC = () => {
 
     };
 
+    // Load filament details from DB
     const loadFilament = async () => {
         const filament_result = await axios.get(`http://localhost:8080/api/filament`);
         console.log(filament_result.data)
         setFilamentDetail(filament_result.data)
     }
+
+    // Table to view usage detail
+    // Form to select filament from dropdown, edit filament details, add additional cost of a usage detail
     return (
         <div className="container">
             <h1 className="text-center mt-5">Overview</h1>

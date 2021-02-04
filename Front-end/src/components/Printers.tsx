@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 
 const Printers: React.FC = () => {
 
+  // Assign data types to variables
   interface Printer {
     id: number;
     rfid_uuid: string;
@@ -15,16 +16,22 @@ const Printers: React.FC = () => {
     assigned_by: string;
   }
 
+  // Create and assign initial state for variables using react hook 'useState'
   const [printer, setPrinter] = useState<Printer[]>([]);
 
+
+  // Similar to componentDidMount and componentDidUpdate:
+  // To perform actions upon loading the page
   useEffect(() => {
     const loadPrinters = async () => {
-      const result = await axios.get("http://localhost:8080/api/printers");
+      const result = await axios.get("http://localhost:8080/api/printers"); // to get available printers in DB using API 
       setPrinter(result.data.reverse());
     }
     loadPrinters();
   }, [printer]);
 
+  // details of all available printers are rendered into a table
+  // Button to edit and assign a printer to user
   return (
     <div>
       <div className="heading d-flex flex-row justify-content-center mt-5">

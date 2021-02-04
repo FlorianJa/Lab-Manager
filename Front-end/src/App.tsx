@@ -12,6 +12,8 @@ import EditPrinter from './components/EditPrinter';
 import ViewUsage from './components/ViewUsage';
 import AddPrinter from './components/AddPrinter';
 
+/* Function to load Navbar and to map the route URLs to components*/
+
 function App() {
 
   return (

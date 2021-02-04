@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 
+// Create and assign initial state for variables using react hook 'useState'
 const Configuration: React.FC = () => {
   const [printer, setPrinter] = useState<string[]>([])
   const [operating, setOperating] = useState<string[]>([])
@@ -9,8 +10,10 @@ const Configuration: React.FC = () => {
   const [filament, setFilament] = useState<string[]>(["PLA"])
   const [filament_data, setFilamentData] = useState<string[]>([])
 
+  // Creating variables
   let { filament_weight, filament_price, filament_name }: any = filament_data
 
+  // To update new changes in varaibles
   const onInputChange = (e: any) => {
     const newChange = { ...printer, [e.target.name]: e.target.value }
     setPrinter(newChange)
@@ -22,18 +25,22 @@ const Configuration: React.FC = () => {
     setFilamentData(newFilament)
   }
 
-
+  // To update new changes in filament data from UI
   const handleFilament = (event: any) => {
     console.log(event.target.value)
     const set_filament = event.target.value
     setFilament(set_filament)
   }
 
+  // Similar to componentDidMount and componentDidUpdate:
+  // To perform actions upon loading the page
   useEffect(() => {
     loadPrinter();
     loadFilament();
+    loadOperating();
   }, [filament]);
 
+  // printer, operating, filament default configurations are updated in db posting data via API
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     try {
@@ -47,20 +54,26 @@ const Configuration: React.FC = () => {
     }
   };
 
+  // Get default printer configuration from DB into local variable
   const loadPrinter = async () => {
     const printer_data = await axios.get("http://localhost:8080/api/printer/2");
     setPrinter(printer_data.data)
-    const operating_data = await axios.get("http://localhost:8080/api/operating/2");
-    setOperating(operating_data.data)
   };
 
+  // Get default operating configuration from DB into local variable
+  const loadOperating = async () => {
+    const operating_data = await axios.get("http://localhost:8080/api/operating/2");
+    setOperating(operating_data.data)
+  }
 
+  // Get default filament configuration from DB into local variable
   const loadFilament = async () => {
     const filament_result = await axios.get(`http://localhost:8080/api/filament/${filament}`);
     console.log(filament_result.data)
     setFilamentData(filament_result.data)
   }
 
+  // Form element allowing changes to Filament, Operating, Printer default configuration details
   return (
     <div className="container">
       <h1 className="heading d-flex flex-row justify-content-center mt-5">Default configuration</h1>

@@ -3,8 +3,11 @@ import axios from "axios";
 import { useHistory } from "react-router-dom";
 
 const EditPrinter: React.FC = () => {
+
+    // useHistory function helps to fallback to a page
     let history = useHistory();
 
+    // Assign data types to variables
     interface Printer {
         rfid_uuid: string;
         printer_name: string;
@@ -12,6 +15,8 @@ const EditPrinter: React.FC = () => {
         name: string;
         assigned_by: string;
     }
+
+    // Assign initial state for variables using react hook 'useState'
     const [printer, setPrinter] = useState<Printer>({
         rfid_uuid: '',
         printer_name: '',
@@ -20,13 +25,16 @@ const EditPrinter: React.FC = () => {
         assigned_by: ''
     })
 
+    // Creating variables
     const { rfid_uuid, printer_name, username, name, assigned_by }: Printer = printer;
 
+    // To update new changes in varaibles
     const onInputChange = (e: any) => {
         const newPrinter = { ...printer, [e.target.name]: e.target.value }
         setPrinter(newPrinter)
     }
 
+    // When clicked on Add, the form data is posted to DB via API 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         const newPrinter = JSON.stringify(printer)
@@ -42,6 +50,7 @@ const EditPrinter: React.FC = () => {
 
     };
 
+    // form element to add new printer
     return (
         <div className="container">
             <h1 className="heading d-flex flex-row justify-content-center mt-5">Add Printer</h1>

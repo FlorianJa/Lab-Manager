@@ -1,9 +1,9 @@
 import axios from "axios";
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { CSVLink } from "react-csv";
+import { CSVLink } from "react-csv"; // react-csv library to export data to a excel sheet
 
-
+// Assign data types to variables
 interface UserUsage {
   user: string;
   last_access_date: string;
@@ -15,6 +15,7 @@ interface UserUsage {
   total_cost: string;
 }
 
+// Assign data types to variables
 interface UsageData {
   id: number;
   owner: string;
@@ -34,16 +35,18 @@ interface UsageData {
   total_cost: string;
 }
 
+// Assign data types to variables
 interface ReportHeaders {
   label: string;
   key: string;
 }
 
+// Create and assign initial state for variables using react hook 'useState'
 const Usage: React.FC = () => {
   const [usage_detail, setUsage] = useState<UsageData[]>([]);
   const [usage_report, setUsageReport] = useState<UserUsage[]>([]);
 
-
+  // Headers in usage report
   const headers: ReportHeaders[] = [
     { label: "User", key: "user" },
     { label: "Last Access Date", key: "last_access_date" },
@@ -55,7 +58,8 @@ const Usage: React.FC = () => {
     { label: "Total Cost(Euro)", key: "total_cost" }
   ];
 
-
+  // Similar to componentDidMount and componentDidUpdate:
+  // To perform actions upon loading the page
   useEffect(() => {
     const loadUsage = async () => {
       const result = await axios.get("http://localhost:8080/api/usage");
@@ -65,9 +69,10 @@ const Usage: React.FC = () => {
       console.log(result.data)
     }
     loadUsage();
-  }, [usage_detail]);
+  }, [usage_detail]); // checks change in state of usage_detail variable
 
-
+  // Overview of Usage details of all usage items are rendered into a table
+  // Buttons to view and edit data of each usage item
   return (
     <div>
       <div className="heading d-flex flex-row justify-content-center mt-5">
@@ -75,7 +80,7 @@ const Usage: React.FC = () => {
           <h1>Usage details</h1>
         </div>
         <div>
-          <CSVLink data={usage_report}
+          <CSVLink data={usage_report}  // Element to load usage_report data into excel sheet
             headers={headers}
             filename={"Usage_Data.csv"}
             className="btn btn-outline-primary export"

@@ -4,6 +4,7 @@ import { useHistory, useParams } from "react-router-dom";
 
 const EditPrinter: React.FC = () => {
 
+    // Assign data types to variables
     interface Printer {
         rfid_uuid: string;
         printer_name: string;
@@ -14,6 +15,7 @@ const EditPrinter: React.FC = () => {
 
     let history = useHistory();
     const { id } = useParams<{ id: string }>();
+    // Create and assign initial state for variables using react hook 'useState'
     const [printer, setPrinter] = useState<Printer>({
         rfid_uuid: '',
         printer_name: '',
@@ -22,17 +24,22 @@ const EditPrinter: React.FC = () => {
         assigned_by: ''
     })
 
+    // Creating variables inheriting types from interface Printer
     const { rfid_uuid, printer_name, username, name, assigned_by }: Printer = printer;
 
+    // To update new changes in varaibles
     const onInputChange = (e: any) => {
         const newChange = { ...printer, status: 'Inactive', [e.target.name]: e.target.value }
         setPrinter(newChange)
     }
 
+    // Similar to componentDidMount and componentDidUpdate:
+    // To perform actions upon loading the page
     useEffect(() => {
         loadPrinter();
     }, []);
 
+    // When clicked on Add, the form data is posted to DB via API 
     const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
         e.preventDefault();
         console.log(printer)
@@ -46,13 +53,15 @@ const EditPrinter: React.FC = () => {
         }
     };
 
+    // Get printer detail from DB based on the id of the printer
     const loadPrinter = async () => {
         const response = await axios.get(`http://localhost:8080/api/printers/${id}`);
         console.log(response.data)
         setPrinter(response.data)
     };
 
-
+    // Form to update the details of the printer
+    // Assigning a user to a printer by filling in the form data
     return (
         <div className="container">
             <h1 className="heading d-flex flex-row justify-content-center mt-5">Printer allocation</h1>

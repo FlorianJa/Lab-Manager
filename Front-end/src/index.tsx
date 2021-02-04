@@ -6,6 +6,7 @@ import reportWebVitals from './reportWebVitals';
 import { BrowserRouter } from "react-router-dom";
 
 const rootElement = document.getElementById("root")
+// renders App component along with route URLs
 ReactDOM.render(
   <React.StrictMode>
     <BrowserRouter>

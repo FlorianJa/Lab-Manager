@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { useParams } from "react-router-dom";
 
+// Assign data types to variables
 interface UsageData {
   owner: string,
   file_name: string,
@@ -21,20 +22,29 @@ interface UsageData {
 }
 
 const ViewUsage: React.FC = () => {
+
+  // useParams returns an object of key/value pairs of URL parameters
   const { id } = useParams<{ id: string }>();
+  // Assign initial state for variables using react hook 'useState'
   const [usage, setUsage] = useState<UsageData[]>([]);
+
+  // Creating variables
   const { owner, file_name, print_time, time_stamp, print_status, printer_name, filament_cost, operating_cost, printer_cost, total_cost, filament_name, filament_price, filament_weight, filament_used, additional_cost }: any = usage;
 
+  // Similar to componentDidMount and componentDidUpdate:
+  // To run function loadUsage() upon loading the page
   useEffect(() => {
     loadUsage();
   }, []);
 
+  // Get usage detail based on 'id' by async request to API
   const loadUsage = async () => {
     const result = await axios.get(`http://localhost:8080/api/usage/${id}`);
     setUsage(result.data);
     console.log(result.data)
   };
 
+  // Usage detail of a item is rendered into a table
   return (<div className="container">
     <h2 className="text-center mt-5">Overview</h2>
     <div className="verticaltable"><table>

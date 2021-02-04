@@ -1,8 +1,6 @@
-
 #include <ArduinoJson.h>
-
 #include <SPI.h>
-#include <MFRC522.h>
+#include <MFRC522.h> // Read and write RFID using this library
 
 // WiFi imports
 #include <ESP8266WiFi.h>
@@ -13,18 +11,20 @@
 constexpr uint8_t RST_PIN = D3; // Configurable, see typical pin layout above
 constexpr uint8_t SS_PIN = D4;  // Configurable, see typical pin layout above
 
-MFRC522 mfrc522(SS_PIN, RST_PIN); // Instance of the class
+MFRC522 mfrc522(SS_PIN, RST_PIN); // Instance of the class for RFID
 MFRC522::MIFARE_Key key;
 
+// MQTT topics to publish connect, disconnect messages which are subscribed by OctoPrint
 const String connect_topic = "printer/connect";
 const String disconnect_topic = "printer/disconnect";
 
+String tag;
+
 DynamicJsonBuffer jsonBuffer;
 
-//OCTPRINT_LED
-// lights up when Octprint is connected
-// off if not connected
-const int OCTPRINT_LED = 5; // D1
+// Authentication LED for connecting printer to OctoPrint
+// lights up when octoPrint is connected to printer i.e state is Operational in OctoPrint
+const int OPERATION_LED = 5; // D1
 
 // Status LED
 // off if not printing
@@ -33,15 +33,15 @@ const int STATUS_LED = 4; // D2
 
 // WLAN access data
 // WARNING add credentials
-const char *ssid = "LFC";
-const char *password = "Akhil0862!";
+const char *ssid = "";
+const char *password = "";
 
 // MQTT server
 // WARNING add credentials
-const char *mqtt_server = "18.197.155.28";
-const char *mqtt_user = "fablabdev";
-const char *mqtt_password = "fablabdev";
-const String mqtt_client = "FabLab-ESP";
+const char *mqtt_server = "";
+const char *mqtt_user = "";
+const char *mqtt_password = "";
+const String mqtt_client = "Lab-ESP";
 
 // MQTT init
 WiFiClient espClient;
@@ -80,15 +80,14 @@ void setup_wifi()
     Serial.println(WiFi.localIP());
 }
 
-//callback prozedur für MQTT subscribe
-//wird durchlaufen sobald eine nachricht anliegt
+// callback procedure for MQTT subscribe
+// Run through as soon as a message is pending
 void callback(char *topic, byte *payload, unsigned int length)
 {
 
     String msg = "";
     for (int i = 0; i < length; i++)
     {
-        //Serial.print((char)payload[i]);
         msg += (char)payload[i];
     }
 
@@ -96,8 +95,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     JsonObject &data = jsonBuffer.parseObject(msg);
     Serial.println();
 
-    // Turns the LED according to the topic
-
+    // Turn the LED according to the message from topic: OctPrintEvent/PrinterStateChanged publsihed by OctoPrint
     if (data["state_id"] == "STARTING")
     {
         Serial.print("Print start from Octoprint");
@@ -113,26 +111,28 @@ void callback(char *topic, byte *payload, unsigned int length)
         digitalWrite(STATUS_LED, LOW);
         Serial.print("Off");
         Serial.println();
-        // Publish disconnect command to octoprint
-        Serial.print("Send MQTT Logout:");
+        // Publish disconnect command to octoprint when print is finished or cancelled
+        // To disconnect OctoPrint from Printer, i.e turns the state in OctoPrint to 'OFFLINE'
+        Serial.print("Send MQTT disconnect:");
         String tmp = disconnect_topic;
         char disconnect_topic[tmp.length() + 1];
         tmp.toCharArray(disconnect_topic, tmp.length() + 1);
         tmp = "{\"_event\":\"DisconnectPrinter\",\"PrinterName\":\"EOS\"}";
         char msg[tmp.length() + 1];
         tmp.toCharArray(msg, tmp.length() + 1);
-        client.publish(disconnect_topic, msg);
+        client.publish(disconnect_topic, msg); // message is published, this message will be subscribed by OctoPrint to turn the state to 'OFFLINE'
         Serial.println(disconnect_topic);
         Serial.println(msg);
         Serial.println("Printer Disconnected from Octprint");
-        digitalWrite(OCTPRINT_LED, LOW);
+        digitalWrite(OPERATION_LED, LOW);
     }
+    // Turn the LED according to the message from topic: OctPrintEvent/PrinterStateChanged publsihed by OctoPrint
     else if (data["state_id"] == "OPERATIONAL")
     {
         Serial.print("Printer is connected");
         Serial.println();
         Serial.print("Changing the LED state to");
-        digitalWrite(OCTPRINT_LED, HIGH);
+        digitalWrite(OPERATION_LED, HIGH);
         Serial.print(" On");
         Serial.println();
     }
@@ -141,23 +141,21 @@ void callback(char *topic, byte *payload, unsigned int length)
         Serial.print("Printer is disconnected");
         Serial.println();
         Serial.print("Changing the LED state to");
-        digitalWrite(OCTPRINT_LED, LOW);
+        digitalWrite(OPERATION_LED, LOW);
         Serial.print(" Off");
         Serial.println();
     }
     Serial.println();
 }
 
-String tag;
-
 void setup()
 {
 
-    //LED Pins OUTPUT setzen
-    pinMode(OCTPRINT_LED, OUTPUT);
+    //LED Pins as OUTPUT setup
+    pinMode(OPERATION_LED, OUTPUT);
     pinMode(STATUS_LED, OUTPUT);
 
-    digitalWrite(OCTPRINT_LED, LOW);
+    digitalWrite(OPERATION_LED, LOW);
     digitalWrite(STATUS_LED, LOW);
 
     // enable serial output
@@ -173,16 +171,15 @@ void setup()
     Serial.println("MFRC522 Init ...");
     mfrc522.PCD_Init();
 
-    //WLAN starten
+    //WLAN start
     setup_wifi();
 
     // Your Domain name with URL path or IP address with path
-
     //MQTT client init
     client.setServer(mqtt_server, 1883);
     client.setCallback(callback);
 
-    Serial.println(F("FabLab ESP setup ende...."));
+    Serial.println(F("Lab ESP setup end...."));
     Serial.println(F("======================================================"));
 }
 
@@ -204,11 +201,12 @@ void reconnect()
             Serial.println("Connected to MQTT Server!");
             Serial.print("Subscribe to Topic ");
             Serial.println("");
+            // Subscribes to MQTT Topic OctPrintEvent/PrinterStateChanged which is published from OctoPrint
             client.subscribe("OctPrintEvent/PrinterStateChanged");
         }
         else
         {
-            // login failed, output error message
+            // MQTT login failed, output error message
             Serial.print("failed:");
             switch (client.state())
             {
@@ -253,17 +251,20 @@ void loop()
         client.connect("EOSClient", mqtt_user, mqtt_password);
     }
 
+    // check if new RFID card is present
     if (!mfrc522.PICC_IsNewCardPresent())
         return;
     if (mfrc522.PICC_ReadCardSerial())
     {
         for (byte i = 0; i < 4; i++)
         {
-            tag += mfrc522.uid.uidByte[i];
+            tag += mfrc522.uid.uidByte[i]; // Read the RFID tag number
         }
         Serial.println(tag);
 
-        if (tag == "999017257")
+        // When RFID is detected, Connect printer to OctoPrint
+        // Publish connect command to octoprint when RFID tag number is detected
+        if (tag == "")
         {
             Serial.println("Access granted");
             Serial.print("Send MQTT LOGIN:");
@@ -273,6 +274,7 @@ void loop()
             tmp = "{\"_event\":\"ConnectPrinter\",\"PrinterName\":\"EOS\"}";
             char msg[tmp.length() + 1];
             tmp.toCharArray(msg, tmp.length() + 1);
+            // Publish MQTT message to topic: printer/connect, to connect OctoPrint to Printer, i.e turns the state in OctoPrint to 'Operational'
             client.publish(connect_topic, msg);
             Serial.println(connect_topic);
             Serial.println(msg);
@@ -280,7 +282,7 @@ void loop()
         }
         else
         {
-            Serial.println("Access denied");
+            Serial.println("Access denied"); // When wrong RFID is detected
             delay(200);
         }
         tag = "";

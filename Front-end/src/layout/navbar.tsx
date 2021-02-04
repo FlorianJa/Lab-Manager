@@ -1,5 +1,7 @@
 import React from 'react'
 import { Link, NavLink } from 'react-router-dom'
+
+/* Navbar component conntaining links to pages*/
 const NavBar: React.FC = () => {
     return (
         <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
