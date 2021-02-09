@@ -44,15 +44,6 @@ def fablab_printers_detail(request, pk):
         return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-# To get available filaments details
-@api_view(['GET'])
-def filament_usage(request):
-    if request.method == 'GET':
-        filament = Filament.objects.all()
-        filament_serializer = FilamentSerializer(filament, many=True)
-        return JsonResponse(filament_serializer.data, safe=False)
-
-
 # To get overall usage details by all users
 @api_view(['GET'])
 def user(request):
@@ -120,6 +111,15 @@ def usage_detail(request, pk):
     elif request.method == 'DELETE':
         usage.delete()
         return JsonResponse({'message': 'usage detail was deleted successfully!'}, status=status.HTTP_204_NO_CONTENT)
+
+
+# To get available filaments details
+@api_view(['GET'])
+def filament_usage(request):
+    if request.method == 'GET':
+        filament = Filament.objects.all()
+        filament_serializer = FilamentSerializer(filament, many=True)
+        return JsonResponse(filament_serializer.data, safe=False)
 
 
 # To manage default filament usage details

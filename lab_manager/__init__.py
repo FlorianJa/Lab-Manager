@@ -1,9 +1,8 @@
+import threading
+from .mqttservice import mqttserviceThread
 default_app_config = 'lab_manager.apps.LabManagerConfig'
 
 
-from .fablabcontrol import fablabcontrolThread
-import threading
-
 stop_thread = threading.Event()
-fab_thread = fablabcontrolThread(stop_thread)
-fab_thread.start()
+service_thread = mqttserviceThread(stop_thread)
+service_thread.start()

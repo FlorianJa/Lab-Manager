@@ -32,12 +32,12 @@ const int OPERATION_LED = 5; // D1
 const int STATUS_LED = 4; // D2
 
 // WLAN access data
-// WARNING add credentials
+// # WARNING add credentials
 const char *ssid = "";
 const char *password = "";
 
 // MQTT server
-// WARNING add credentials
+// # WARNING add credentials
 const char *mqtt_server = "";
 const char *mqtt_user = "";
 const char *mqtt_password = "";
@@ -264,6 +264,7 @@ void loop()
 
         // When RFID is detected, Connect printer to OctoPrint
         // Publish connect command to octoprint when RFID tag number is detected
+        // # WARNING add RFID tag
         if (tag == "")
         {
             Serial.println("Access granted");

@@ -7,6 +7,8 @@ from rest_framework.parsers import JSONParser
 import simplejson
 import time
 
+
+# WARNING add credentials
 # WARNING add MQTT Host
 MQTT_HOST = ''
 MQTT_PORT = 1883
@@ -23,7 +25,7 @@ MQTT_PASS = ''
 # {'cmd':'command','data':'information'}
 
 
-class fablabcontrolThread(threading.Thread):
+class mqttserviceThread(threading.Thread):
 
     def __init__(self, event):
         threading.Thread.__init__(self)
@@ -31,7 +33,7 @@ class fablabcontrolThread(threading.Thread):
         self.mqttc = None
 
     def run(self):
-        print("Start FabLabControl Thread, wait for Django ....")
+        print("Start mqttservice Thread, wait for Django ....")
         time.sleep(5.0)
 
         # mqtt client starten
