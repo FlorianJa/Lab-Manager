@@ -39,8 +39,6 @@ Path : ESP_RFID/ESP_RFID.ino
 - [Setup NodeMCU with RFID](https://content.instructables.com/ORIG/FX4/GP96/J48Q18RQ/FX4GP96J48Q18RQ.png)
 - Upload the code
 
-<hr />
-
 ## Lab-Manager (Django rest framework + Postgres-DB)
 
 Back-End of the application is a REST api built using Django rest framework with Postgres-DB.
@@ -104,11 +102,10 @@ Back-End of the application is a REST api built using Django rest framework with
   - `GET, PUT` default material usage details: ` /api/material/{string:id}`
   - `GET, PUT` default printer usage details: ` /api/printer/{string:id}`
   - `GET, PUT` default operating usage details: ` /api/operating/{string:id}`
-  <hr />
 
 ## Front-End (React App)
 
-![Application view](Uploads\Application_preview.GIF)
+![Application view](https://github.com/FabLabSiegen/Lab-Manager/blob/newfeature/Uploads/Application_preview.gif)
 
 Path : Lab-manager/Front-End
 
@@ -142,8 +139,6 @@ To get the Front-End application running locally:
 
 Local web server will use port 8081 instead of standard React's port 3000 to prevent conflicts with some backends like Node. Port can be onfigured in scripts section of `package.json`. Once the Django API is running, Front-end starts interacting with the API.
 
-<hr />
-
 ## OctoPrint Setup for testing
 
 OctoPrint is used to control and monitor every aspect of your 3D printer and your printing jobs right from within your browser.
@@ -156,8 +151,6 @@ OctoPrint is used to control and monitor every aspect of your 3D printer and you
 
 - Add [MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/) and [MQTT Subscribe](https://plugins.octoprint.org/plugins/mqttsubscribe/) plugins to the OctoPrint to Pubilish/Subscribe messages from MQTT Broker. Refer procedure for adding plugins in OctoPrint https://plugins.octoprint.org/help/installation/
 
-- Configure [MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/) by entering MQTT connection details under Broker tab and configure topics using base topic: OctoPrint as [shown](Uploads\MQTT_plugin_setup1.PNG)
+- Configure [MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/) by entering MQTT connection details under Broker tab and configure topics using base topic: OctoPrint as [shown](https://github.com/FabLabSiegen/Lab-Manager/blob/newfeature/Uploads/MQTT_plugin_setup1.PNG)
 
-- Configure [MQTT Subscribe](https://plugins.octoprint.org/plugins/mqttsubscribe/) plugin as below
-
-![screenshot](Uploads\MQTT_Subscribe_setup.png)
+- Configure [MQTT Subscribe](https://plugins.octoprint.org/plugins/mqttsubscribe/) plugin as [shown](https://github.com/FabLabSiegen/Lab-Manager/blob/newfeature/Uploads/MQTT_Subscribe_setup.png).
