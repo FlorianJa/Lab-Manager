@@ -106,7 +106,7 @@ Back-End of the application is a REST api built using Django rest framework with
 
 ## Front-End (React App)
 
-![Application view](https://github.com/FabLabSiegen/Lab-Manager/blob/newfeature/Uploads/Application_preview.gif)
+![Application view](https://github.com/FabLabSiegen/Lab-Manager/blob/master/Uploads/Application_preview.gif)
 
 Path : Lab-manager/Front-End
 
@@ -152,6 +152,6 @@ OctoPrint is used to control and monitor every aspect of your 3D printer and you
 
 - Add [MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/) and [MQTT Subscribe](https://plugins.octoprint.org/plugins/mqttsubscribe/) plugins to the OctoPrint to Pubilish/Subscribe messages from MQTT Broker. Refer procedure for adding plugins in OctoPrint https://plugins.octoprint.org/help/installation/
 
-- Configure [MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/) by entering MQTT connection details under Broker tab and configure topics using base topic: OctoPrint as [shown](https://github.com/FabLabSiegen/Lab-Manager/blob/newfeature/Uploads/MQTT_plugin_setup1.PNG)
+- Configure [MQTT plugin](https://plugins.octoprint.org/plugins/mqtt/) by entering MQTT connection details under Broker tab and configure topics using base topic: OctoPrint as [shown](https://github.com/FabLabSiegen/Lab-Manager/blob/master/Uploads/MQTT_plugin_setup1.PNG)
 
-- Configure [MQTT Subscribe](https://plugins.octoprint.org/plugins/mqttsubscribe/) plugin as [shown](https://github.com/FabLabSiegen/Lab-Manager/blob/newfeature/Uploads/MQTT_Subscribe_setup.png).
+- Configure [MQTT Subscribe](https://plugins.octoprint.org/plugins/mqttsubscribe/) plugin as [shown](https://github.com/FabLabSiegen/Lab-Manager/blob/master/Uploads/MQTT_Subscribe_setup.png).
