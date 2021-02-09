@@ -39,10 +39,10 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'lab_manager',
-     # Django REST framework 
+    # Django REST framework
     'rest_framework',
     # CORS
-    'corsheaders',  
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
@@ -58,6 +58,7 @@ MIDDLEWARE = [
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
+    'http://localhost:8081',
     'http://localhost:8080',
 )
 
@@ -66,7 +67,7 @@ ROOT_URLCONF = 'labmanager.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR, 'templates'),],
+        'DIRS': [os.path.join(BASE_DIR, 'templates'), ],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -85,8 +86,10 @@ WSGI_APPLICATION = 'labmanager.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/3.1/ref/settings/#databases
 
+
+# WARNING add credentials
 DATABASES = {
-       'default': {
+    'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'labmanager',
         'USER': 'fablabdev',
