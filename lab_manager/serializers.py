@@ -17,9 +17,8 @@ class FabLabPrinterSerializer(serializers.ModelSerializer):
                   'status',
                   'assigned_by')
 
+
 # Serializer for User model
-
-
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:

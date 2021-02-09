@@ -12,7 +12,7 @@ This project is prototype and still in development. There is no setup script or 
 
 ## Key features
 
-- Monitor and Assign available printer to visitng customers in the lab
+- Monitor and Assign available printer to visiting customers in the lab
 - Access control via ESP8266 and RFID-reader by connecting/disconnecting OctoPrint to printer
 - Store and retrieve print usage details
 - Calculate, view and manage cost of each print
@@ -67,7 +67,8 @@ Back-End of the application is a REST api built using Django rest framework with
          $ virtualenv  venv -p python3
          $ source venv/bin/activate
      ```
-  3. Install the dependencies needed to run the app:
+  3. Dependencies such as [django-rest-framework](https://www.django-rest-framework.org/) a powerful and flexible toolkit for building Web APIs, [psycopg2](https://pypi.org/project/psycopg2/) (PostgreSQL database adapter for Python), [django-cors-headers](https://pypi.org/project/django-cors-headers/) (for allowing resources to be accessed on other domains), [simplejson](https://pypi.org/project/simplejson/) as json encoder/decoder are used to build the API.
+     Install the dependencies needed to run the app:
      ```bash
          $ pip install -r requirements.txt
      ```
@@ -75,7 +76,7 @@ Back-End of the application is a REST api built using Django rest framework with
 
      - Add credentials and db name in `settings.py`
 
-  5. In the file lab_manager\mqttservice.py, search for "WARNING add MQTT Host" and add MQTT host details
+  5. [paho-mqtt](https://pypi.org/project/paho-mqtt/) as MQTT client is used to connect to an MQTT broker to publish messages, and to subscribe to topics and receive published messages. In the file lab_manager\mqttservice.py, search for "WARNING add MQTT Host" and add MQTT host details
 
   6. Make those migrations work
      ```bash
