@@ -95,7 +95,7 @@ void callback(char *topic, byte *payload, unsigned int length)
     JsonObject &data = jsonBuffer.parseObject(msg);
     Serial.println();
 
-    // Turn the LED according to the message from topic: OctPrintEvent/PrinterStateChanged publsihed by OctoPrint
+    // Turn the LED according to the message from topic: OctoPrintEvent/PrinterStateChanged publsihed by OctoPrint
     if (data["state_id"] == "STARTING")
     {
         Serial.print("Print start from Octoprint");
@@ -123,10 +123,10 @@ void callback(char *topic, byte *payload, unsigned int length)
         client.publish(disconnect_topic, msg); // message is published, this message will be subscribed by OctoPrint to turn the state to 'OFFLINE'
         Serial.println(disconnect_topic);
         Serial.println(msg);
-        Serial.println("Printer Disconnected from Octprint");
+        Serial.println("Printer Disconnected from OctoPrint");
         digitalWrite(OPERATION_LED, LOW);
     }
-    // Turn the LED according to the message from topic: OctPrintEvent/PrinterStateChanged publsihed by OctoPrint
+    // Turn the LED according to the message from topic: OctoPrintEvent/PrinterStateChanged publsihed by OctoPrint
     else if (data["state_id"] == "OPERATIONAL")
     {
         Serial.print("Printer is connected");
@@ -201,8 +201,8 @@ void reconnect()
             Serial.println("Connected to MQTT Server!");
             Serial.print("Subscribe to Topic ");
             Serial.println("");
-            // Subscribes to MQTT Topic OctPrintEvent/PrinterStateChanged which is published from OctoPrint
-            client.subscribe("OctPrintEvent/PrinterStateChanged");
+            // Subscribes to MQTT Topic OctoPrintEvent/PrinterStateChanged which is published from OctoPrint
+            client.subscribe("OctoPrintEvent/PrinterStateChanged");
         }
         else
         {
@@ -279,7 +279,7 @@ void loop()
             client.publish(connect_topic, msg);
             Serial.println(connect_topic);
             Serial.println(msg);
-            Serial.println("Printer Connected to Octprint");
+            Serial.println("Printer Connected to OctoPrint");
         }
         else
         {

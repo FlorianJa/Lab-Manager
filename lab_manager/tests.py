@@ -1,16 +1,16 @@
 # from django.test import TestCase
 
-# from lab_manager.models import FabLabUser,Material,Printer,Operating,UsageData
+# from lab_manager.models import FabLabPrinter,Material,Printer,Operating,UsageData
 
 # # Unit tests for Models
 
-# class FabLabUserModel(TestCase):
+# class FabLabPrinterModel(TestCase):
 #     def setUp(self):
-#         self.user = FabLabUser(rfid_uuid="1", username="user1",name="user1",is_login=True)
+#         self.user = FabLabPrinter(rfid_uuid="1", username="user1",name="user1",is_login=True)
 #         self.user.save()
 
 #     def test_user_creation(self):
-#         self.assertEqual(FabLabUser.objects.count(), 1)
+#         self.assertEqual(FabLabPrinter.objects.count(), 1)
 
 #     def test_user_representation(self):
 #         self.assertEqual(self.user.username,str(self.user.username))

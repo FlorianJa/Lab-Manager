@@ -17,9 +17,9 @@ MQTT_USER = ''
 MQTT_PASS = ''
 
 # Topics
-# OctPrintEvent/PrintDone no-retain subscribe
-# OctPrintEvent/PrintStarted no-retain subscribe
-# OctPrintEvent/PrintCancelled no-retain subscribe
+# OctoPrintEvent/PrintDone no-retain subscribe
+# OctoPrintEvent/PrintStarted no-retain subscribe
+# OctoPrintEvent/PrintCancelled no-retain subscribe
 
 # json message
 # {'cmd':'command','data':'information'}
@@ -71,7 +71,7 @@ class mqttserviceThread(threading.Thread):
         else:
             print("Connected to MQTT server ...")
             self.mqttc.subscribe(
-                [("OctPrintEvent/PrintDone", 2), ("OctPrintEvent/PrintStarted", 2), ("OctPrintEvent/PrintCancelled", 2)])
+                [("OctoPrintEvent/PrintDone", 2), ("OctoPrintEvent/PrintStarted", 2), ("OctoPrintEvent/PrintCancelled", 2)])
 
     def on_mqtt_disconnect(self, client, userdata, rc):
         self.mqttc.reconnect()
@@ -105,7 +105,7 @@ class mqttserviceThread(threading.Thread):
 
     # Makes the printer status active
     def login(self, data):
-        from .models import FabLabUser
+        from .models import FabLabPrinter
         from datetime import datetime as dt
         import time
 
@@ -114,10 +114,11 @@ class mqttserviceThread(threading.Thread):
         # changing status of printer to Active
         # change names
         try:
-            # If user starts a print from OctPrintEvent change status in app to Active
+            # If user starts a print from OctoPrintEvent change status in app to Active
             if(data["_event"] == "PrintStarted"):
                 try:
-                    login_user = FabLabUser.objects.get(username=data["owner"])
+                    login_user = FabLabPrinter.objects.get(
+                        username=data["owner"])
                     login_user.status = "Active"
                     login_time = dt.fromtimestamp(data["_timestamp"])
                     login_user.last_access_date = login_time.strftime(
@@ -133,7 +134,7 @@ class mqttserviceThread(threading.Thread):
     # Make the printer status inactive
     # change names
     def logout(self, data):
-        from .models import FabLabUser
+        from .models import FabLabPrinter
         from datetime import datetime as ldt
         import time
 
@@ -141,9 +142,9 @@ class mqttserviceThread(threading.Thread):
 
         # changing status of printer to Inactive
         try:
-            # If user ends a print from OctPrintEvent status change in app to Inactive
+            # If user ends a print from OctoPrintEvent status change in app to Inactive
             if(data["_event"] == "PrintDone" or data["_event"] == "PrintCancelled"):
-                logout_user = FabLabUser.objects.get(username=data["owner"])
+                logout_user = FabLabPrinter.objects.get(username=data["owner"])
                 logout_user.status = "Inactive"
                 logout_time = ldt.fromtimestamp(data["_timestamp"])
                 logout_user.last_access_date: logout_time.strftime(
@@ -157,14 +158,14 @@ class mqttserviceThread(threading.Thread):
 
     # Add maintenance details by summing the print hours
     def add_print_hours_maintenance(self, data):
-        from .models import Maintenance, FabLabUser
+        from .models import Maintenance, FabLabPrinter
         from decimal import Decimal
 
         print('maintenance request start')
 
         # get the printer name which is assigned to the user
         try:
-            printer = FabLabUser.objects.get(
+            printer = FabLabPrinter.objects.get(
                 username=data["owner"])
         except Exception as e:
             print(e)
@@ -186,7 +187,7 @@ class mqttserviceThread(threading.Thread):
 
     # Add usage details of the print once it is Done.
     def add_usage(self, data):
-        from .models import UsageData, Printer, Operating, Filament, FabLabUser, User
+        from .models import UsageData, Printer, Operating, Filament, FabLabPrinter, User
         import json
         from datetime import datetime
         from decimal import Decimal
@@ -194,7 +195,7 @@ class mqttserviceThread(threading.Thread):
 
         # get the printer details which is assigned to the user
         try:
-            printer_detail = FabLabUser.objects.get(username=data["owner"])
+            printer_detail = FabLabPrinter.objects.get(username=data["owner"])
             if(printer_detail):
                 printer_name = printer_detail.printer_name
             else:

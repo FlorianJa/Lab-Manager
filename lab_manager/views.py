@@ -3,48 +3,51 @@ from django.http.response import JsonResponse
 from rest_framework.parsers import JSONParser
 from rest_framework import status
 from rest_framework.decorators import api_view
-from lab_manager.models import FabLabUser, Printer, Operating, UsageData, Filament, Maintenance, User
+from lab_manager.models import FabLabPrinter, Printer, Operating, UsageData, Filament, Maintenance, User
 # Django's serialization framework provides a mechanism for “translating” Django models into other formats.
-from lab_manager.serializers import FabLabUserSerializer, FilamentSerializer, OperatingSerializer, PrinterSerializer, UsageSerializer, MaintenanceSerializer, UserSerializer
+from lab_manager.serializers import FabLabPrinterSerializer, FilamentSerializer, OperatingSerializer, PrinterSerializer, UsageSerializer, MaintenanceSerializer, UserSerializer
 
 
 # To retreive/add Printers details available in Lab
 @api_view(['GET', 'POST'])
 def fablab_printers(request):
     if request.method == 'GET':
-        fablabuser = FabLabUser.objects.all()
-        fablabuser_serializer = FabLabUserSerializer(fablabuser, many=True)
-        return JsonResponse(fablabuser_serializer.data, safe=False)
+        fablabprinter = FabLabPrinter.objects.all()
+        fablabprinter_serializer = FabLabPrinterSerializer(
+            fablabprinter, many=True)
+        return JsonResponse(fablabprinter_serializer.data, safe=False)
     elif request.method == 'POST':
-        fablabuser_data = JSONParser().parse(request)
-        fablabuser_serializer = FabLabUserSerializer(data=fablabuser_data)
-        if fablabuser_serializer.is_valid():
-            fablabuser_serializer.save()
-            return JsonResponse(fablabuser_serializer.data, status=status.HTTP_201_CREATED)
-        return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        fablabprinter_data = JSONParser().parse(request)
+        fablabprinter_serializer = FabLabPrinterSerializer(
+            data=fablabprinter_data)
+        if fablabprinter_serializer.is_valid():
+            fablabprinter_serializer.save()
+            return JsonResponse(fablabprinter_serializer.data, status=status.HTTP_201_CREATED)
+        return JsonResponse(fablabprinter_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # To assign a Printer to user
 @api_view(['PUT', 'GET'])
 def fablab_printers_detail(request, pk):
     try:
-        fablabuser = FabLabUser.objects.get(pk=pk)
+        fablabprinter = FabLabPrinter.objects.get(pk=pk)
     except users.DoesNotExist:
         return JsonResponse({'message': 'The printer does not exist'}, status=status.HTTP_404_NOT_FOUND)
     if request.method == 'GET':
-        fablabuser_serializer = FabLabUserSerializer(fablabuser)
-        return JsonResponse(fablabuser_serializer.data, safe=False)
+        fablabprinter_serializer = FabLabPrinterSerializer(fablabprinter)
+        return JsonResponse(fablabprinter_serializer.data, safe=False)
     if request.method == 'PUT':
-        fablabuser_data = JSONParser().parse(request)
-        fablabuser_serializer = FabLabUserSerializer(
-            fablabuser, data=fablabuser_data)
-        if fablabuser_serializer.is_valid():
-            fablabuser_serializer.save()
-            return JsonResponse(fablabuser_serializer.data)
-        return JsonResponse(fablabuser_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
+        fablabprinter_data = JSONParser().parse(request)
+        fablabprinter_serializer = FabLabPrinterSerializer(
+            fablabprinter, data=fablabprinter_data)
+        if fablabprinter_serializer.is_valid():
+            fablabprinter_serializer.save()
+            return JsonResponse(fablabprinter_serializer.data)
+        return JsonResponse(fablabprinter_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 # To get overall usage details by all users
+
+
 @api_view(['GET'])
 def user(request):
     if request.method == 'GET':

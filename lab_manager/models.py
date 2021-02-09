@@ -5,7 +5,7 @@ from decimal import Decimal
 
 # Each model maps to a single database table
 # Model for mapping user with with RFID and Printer
-class FabLabUser(models.Model):
+class FabLabPrinter(models.Model):
 
     rfid_uuid = models.CharField(
         max_length=14, unique=True, verbose_name='RFID UUID')
