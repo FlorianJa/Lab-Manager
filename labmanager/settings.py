@@ -90,11 +90,11 @@ WSGI_APPLICATION = 'labmanager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': '',
-        'USER': '',
-        'PASSWORD': '',
-        'HOST': '',
-        'PORT': '',
+        'NAME': 'labmanager',
+        'USER': 'fablabdev',
+        'PASSWORD': 'fablabdev',
+        'HOST': '127.0.0.1',
+        'PORT': '5432',
     },
 }
 
