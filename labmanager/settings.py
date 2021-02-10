@@ -58,7 +58,6 @@ MIDDLEWARE = [
 
 CORS_ORIGIN_ALLOW_ALL = False
 CORS_ORIGIN_WHITELIST = (
-    'http://localhost:8081',
     'http://localhost:8080',
 )
 
@@ -91,11 +90,11 @@ WSGI_APPLICATION = 'labmanager.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'labmanager',
-        'USER': 'fablabdev',
-        'PASSWORD': 'fablabdev',
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
+        'NAME': '',
+        'USER': '',
+        'PASSWORD': '',
+        'HOST': '',
+        'PORT': '',
     },
 }
 
