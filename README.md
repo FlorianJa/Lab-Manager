@@ -21,8 +21,8 @@ This project is prototype and still in development. There is no setup script or 
 ## Project Links
 
 - [Architecture](/Documentation/Arch.png)
-- [High level user tasks](/Documentation/user tasks.PNG)
-- [How to use the application](Documentation/Procedure for operations.pdf)
+- [High level user tasks](/Documentation/user_tasks.PNG)
+- [How to use the application](/Documentation/Procedure_for_operations.pdf)
 
 # Setup
 
