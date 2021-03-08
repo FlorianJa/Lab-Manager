@@ -20,9 +20,9 @@ This project is prototype and still in development. There is no setup script or 
 
 ## Project Links
 
-- [Architecture](https://drive.google.com/file/d/16qB0iT30ZRu07Zg9T2nqXLLCi88Ac29D/view?usp=sharing)
-- [High level user tasks](https://drive.google.com/file/d/1WH51V1CVpxdZxaitDeyuj2zDtwwMi52o/view?usp=sharing)
-- [How to use the application](https://drive.google.com/file/d/1tR145jTIe74obSpfrPw2ca4HzGGN9U2-/view?usp=sharing)
+- [Architecture](/Documentation/Arch.png)
+- [High level user tasks](/Documentation/user tasks.PNG)
+- [How to use the application](Documentation/Procedure for operations.pdf)
 
 # Setup
 
